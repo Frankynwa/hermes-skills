@@ -293,6 +293,25 @@ grep -rl "404: Not Found\\|TODO" ~/.hermes/skills/*/SKILL.md 2>/dev/null
 
 Hermes skills are plain files in `~/.hermes/skills/` — version them with git and push to GitHub for seamless sync between devices.
 
+**CRITICAL: Only sync locally-created skills, NOT bundled or hub-installed ones.** Pushing 200+ bundled skills to a personal repo is clutter. The user expects only skills Hermes created from their local experience.
+
+#### Distinguishing Skill Sources
+
+Skills come from three sources. Know which is which before syncing:
+
+| Source | Location | How to identify |
+|--------|----------|-----------------|
+| **Bundled** | Shipped with Hermes | `cut -d: -f1 ~/.hermes/skills/.bundled_manifest` |
+| **Hub-installed** | `hermes skills install` | `grep 'INSTALL' ~/.hermes/skills/.hub/audit.log \| awk '{print $3}'` |
+| **Locally-created** | `skill_manage` tool or `~/.agents/skills/` | Everything NOT in the two lists above |
+
+```bash
+# One-liner to list locally-created skills
+comm -23 \
+  <(find ~/.hermes/skills -name 'SKILL.md' -not -path '*/.archive/*' -not -path '*/.hub/*' -exec sed -n '/^---$/,/^---$/p' {} \; | grep '^name:' | sed 's/^name: *//' | sort -u) \
+  <((cut -d: -f1 ~/.hermes/skills/.bundled_manifest; grep 'INSTALL' ~/.hermes/skills/.hub/audit.log | awk '{print $3}') | sort -u)
+```
+
 #### Initial Setup (Device A)
 
 ```bash
