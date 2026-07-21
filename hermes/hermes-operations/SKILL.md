@@ -1,6 +1,6 @@
 ---
 name: hermes-operations
-description: "Operate, configure, and maintain Hermes Agent — model benchmarking, web UI integration, skill library management, and memory optimization. Use when choosing models, connecting web frontends, auditing/cleaning skills, or pruning memory."
+description: "Operate, configure, and maintain Hermes Agent — model benchmarking, web UI integration, skill library management (sync, audit, cleanup), and memory optimization. Use when choosing models, connecting web frontends, syncing skills across devices, auditing/cleaning skills, or pruning memory."
 tags: [hermes, operations, benchmarking, web-ui, skills, maintenance]
 related_skills: [hermes-agent, smart-model-switch, hermes-git-upgrade-with-patches]
 ---
@@ -286,8 +286,91 @@ grep -rn "curl\|wget\|exec\|eval\|subprocess\|os.system\|rm -rf\|sudo" \
 find ~/.hermes/skills/ -name "SKILL.md" | wc -l          # total
 find ~/.hermes/skills/ -type d -empty                      # empty dirs
 find ~/.hermes/skills/ -name "SKILL.md" -size 0            # 0-byte
-grep -rl "404: Not Found\|TODO" ~/.hermes/skills/*/SKILL.md 2>/dev/null
+grep -rl "404: Not Found\\|TODO" ~/.hermes/skills/*/SKILL.md 2>/dev/null
 ```
+
+### Skills Sync via Git (Cross-Device)
+
+Hermes skills are plain files in `~/.hermes/skills/` — version them with git and push to GitHub for seamless sync between devices.
+
+#### Initial Setup (Device A)
+
+```bash
+cd ~/.hermes/skills
+
+# 1. Create .gitignore — see references/skills-gitignore.txt
+# 2. Init + commit
+git init
+git branch -m main
+git add -A
+git commit -m "init: hermes skills collection"
+
+# 3. Create GitHub repo (private), push
+git remote add origin git@github.com:<user>/hermes-skills.git
+git push -u origin main
+```
+
+#### Clone on Device B
+
+```bash
+# Backup existing skills
+mv ~/.hermes/skills ~/.hermes/skills.bak
+
+# Clone
+git clone git@github.com:<user>/hermes-skills.git ~/.hermes/skills
+```
+
+#### Daily Sync
+
+```bash
+# Pull latest from other device
+cd ~/.hermes/skills && git pull
+
+# After making changes
+cd ~/.hermes/skills && git add -A && git commit -m "..." && git push
+```
+
+#### .gitignore Essentials
+
+Must exclude internal state files, hub caches, archives, and build artifacts:
+
+```gitignore
+# Hermes internal files
+.usage.json
+.usage.json.lock
+.curator_state
+.curator_backups/
+.bundled_manifest
+.hub/
+
+# Archived (old versions, not needed for sync)
+.archive/
+
+# macOS
+.DS_Store
+**/.DS_Store
+
+# Python
+__pycache__/
+**/__pycache__/
+*.pyc
+```
+
+**Pitfall**: `__pycache__/` directories in `pptx/`, `docx/`, `xlsx/` `scripts/office/validators/` contain `.pyc` files. If they were already staged before `.gitignore` was added, they remain tracked — use `git rm --cached $(git ls-files '**/__pycache__/*')` to clean them out after adding the gitignore, then amend.
+
+#### China GFW Workaround
+
+GitHub is blocked on mainland networks. The repo can be created and the commit staged locally, but `git push` requires a proxy/VPN. Options:
+
+1. **SSH proxy**: add to `~/.ssh/config`:
+   ```
+   Host github.com
+       ProxyCommand nc -X connect -x 127.0.0.1:7890 %h %p
+   ```
+2. **HTTPS proxy**: `git config http.proxy socks5://127.0.0.1:7890`
+3. **Push when VPN is active** — the local repo stays ready
+
+See `chinese-git-workflow` skill for Gitee mirror alternatives.
 
 ## Part 5: Cron Job Failure Diagnosis
 
