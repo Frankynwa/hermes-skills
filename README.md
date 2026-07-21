@@ -1,15 +1,12 @@
 # Hermes Skills
 
-> Personal skill collection for [Hermes Agent](https://github.com/NousResearch/hermes-agent) — **12 skills** across **9 categories**.
+> Personal skill collection for [Hermes Agent](https://github.com/NousResearch/hermes-agent) — **9 skills** across **6 categories**.
 
 ## 📋 Overview
 
 - **🔧 DevOps** — 1 skill
-- **🔥 Grill Me** — 1 skill
-- **🔥 Grill with Docs** — 1 skill
 - **⚙️ Hermes Operations** — 3 skills
 - **🖨️ HTML to PDF** — 1 skill
-- **🏗️ Codebase Architecture** — 1 skill
 - **📦 lark-cli-pitfalls** — 1 skill
 - **⚡ Productivity** — 1 skill
 - **💻 Software Development** — 2 skills
@@ -20,18 +17,6 @@
 
 - **`embedded-hw-sw-gap-analysis`** — Use when integrating embedded Linux software with custom hardware — systematically cross-reference schematics, SoC datasheets, UI design PDFs, and codebase to extract hardware information gaps that block deployment.
   `devops/embedded-hw-sw-gap-analysis/`
-
-
-## 🔥 Grill Me
-
-- **`grill-me`** — A relentless interview to sharpen a plan or design.
-  `grill-me/`
-
-
-## 🔥 Grill with Docs
-
-- **`grill-with-docs`** — A relentless interview to sharpen a plan or design, which also creates docs (ADR's and glossary) as we go.
-  `grill-with-docs/`
 
 
 ## ⚙️ Hermes Operations
@@ -50,12 +35,6 @@
 
 - **`html-to-pdf-macos`** — Convert HTML or Markdown documents to PDF on macOS. Use xhtml2pdf as the primary method — weasyprint fails due to missing pango system libraries.
   `html-to-pdf-macos/`
-
-
-## 🏗️ Codebase Architecture
-
-- **`improve-codebase-architecture`** — Scan a codebase for deepening opportunities, present them as a visual HTML report, then grill through whichever one you pick.
-  `improve-codebase-architecture/`
 
 
 ## 📦 lark-cli-pitfalls
