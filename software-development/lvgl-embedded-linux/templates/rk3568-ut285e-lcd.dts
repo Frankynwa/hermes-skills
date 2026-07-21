@@ -1,0 +1,92 @@
+/*
+ * rk3568-ut285e-lcd.dts — Device tree overlay template
+ * ====================================================
+ * For RK3568 + 800×480 24-bit RGB parallel LCD + I2C4 touch
+ *
+ * Compile: dtc -@ -I dts -O dtb -o rk3568-ut285e-lcd.dtbo rk3568-ut285e-lcd.dts
+ * Apply:   U-Boot: fdt apply rk3568-ut285e-lcd.dtbo
+ *          or merge into main .dts
+ */
+
+/dts-v1/;
+/plugin/;
+
+/ { compatible = "rockchip,rk3568"; };
+
+/* ══ Backlight PWM ══ */
+fragment@0 { target = <&pwm0>; __overlay__ { status = "okay"; }; };
+
+fragment@1 { target-path = "/"; __overlay__ {
+    backlight: backlight {
+        compatible = "pwm-backlight";
+        pwms = <&pwm0 0 50000 0>;                       /* 20kHz */
+        brightness-levels = <0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19
+            20 25 30 35 40 45 50 55 60 65 70 75 80 85 90 95 100>;
+        default-brightness-level = <36>;                /* 100% */
+        enable-gpios = <&gpio0 RK_PC0 GPIO_ACTIVE_HIGH>; /* ADJUST per hardware */
+    };
+};};
+
+/* ══ RGB LCD Panel (800×480) ══ */
+fragment@2 { target = <&rgb>; __overlay__ { status = "okay"; }; };
+
+fragment@3 { target-path = "/"; __overlay__ {
+    panel {
+        compatible = "panel-simple";
+        backlight = <&backlight>;
+        enable-gpios = <&gpio0 RK_PC1 GPIO_ACTIVE_HIGH>; /* ADJUST */
+
+        display-timings { native-mode = <&timing0>;
+            timing0: timing0 {
+                clock-frequency = <28000000>;  /* ADJUST per LCD datasheet */
+                hactive = <800>; vactive = <480>;
+                hfront-porch = <40>; hback-porch = <88>; hsync-len = <48>;
+                vfront-porch = <13>; vback-porch = <32>; vsync-len = <3>;
+                hsync-active = <0>; vsync-active = <0>;
+                de-active = <0>; pixelclk-active = <0>;
+            };
+        };
+
+        port { panel_in_rgb: endpoint { remote-endpoint = <&rgb_out_panel>; }; };
+    };
+};};
+
+/* ══ I2C4 Capacitive Touch ══ */
+fragment@4 { target = <&i2c4>; __overlay__ {
+    status = "okay"; clock-frequency = <400000>;
+
+    /* GT911 — most common. Address may be 0x5d or 0x14 */
+    gt911: touchscreen@5d {
+        compatible = "goodix,gt911";
+        reg = <0x5d>;
+        interrupt-parent = <&gpio0>;
+        interrupts = <RK_PB5 IRQ_TYPE_EDGE_FALLING>;
+        irq-gpios = <&gpio0 RK_PB5 GPIO_ACTIVE_HIGH>;   /* ADJUST */
+        reset-gpios = <&gpio0 RK_PC2 GPIO_ACTIVE_LOW>;   /* ADJUST */
+        touchscreen-size-x = <800>; touchscreen-size-y = <480>;
+    };
+
+    /* Alternative: FT5x06 */
+    // ft5x06: touchscreen@38 {
+    //     compatible = "edt,edt-ft5406"; reg = <0x38>;
+    //     interrupt-parent = <&gpio0>; interrupts = <RK_PB5 IRQ_TYPE_EDGE_FALLING>;
+    //     reset-gpios = <&gpio0 RK_PC2 GPIO_ACTIVE_LOW>;
+    //     touchscreen-size-x = <800>; touchscreen-size-y = <480>;
+    // };
+};};
+
+/* ══ GPIO Keys ══ */
+fragment@5 { target-path = "/"; __overlay__ {
+    gpio_keys: gpio-keys {
+        compatible = "gpio-keys"; autorepeat;
+        key_menu  { label="Menu";  linux,code=<139>; gpios=<&gpio0 RK_PA0 GPIO_ACTIVE_LOW>; };
+        key_back  { label="Back";  linux,code=<158>; gpios=<&gpio0 RK_PA1 GPIO_ACTIVE_LOW>; };
+        key_up    { label="Up";    linux,code=<103>; gpios=<&gpio0 RK_PA2 GPIO_ACTIVE_LOW>; };
+        key_down  { label="Down";  linux,code=<108>; gpios=<&gpio0 RK_PA3 GPIO_ACTIVE_LOW>; };
+        key_left  { label="Left";  linux,code=<105>; gpios=<&gpio0 RK_PA4 GPIO_ACTIVE_LOW>; };
+        key_right { label="Right"; linux,code=<106>; gpios=<&gpio0 RK_PA5 GPIO_ACTIVE_LOW>; };
+        key_enter { label="OK";    linux,code=<28>;  gpios=<&gpio0 RK_PA6 GPIO_ACTIVE_LOW>; };
+        key_cam   { label="Screenshot"; linux,code=<212>; gpios=<&gpio0 RK_PA7 GPIO_ACTIVE_LOW>; };
+        key_power { label="Power"; linux,code=<116>; gpios=<&gpio0 RK_PB0 GPIO_ACTIVE_LOW>; };
+    };
+};};

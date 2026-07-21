@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>ai.openwebui.server</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/wangruifan/openwebui-venv/bin/open-webui</string>
+        <string>serve</string>
+        <string>--host</string>
+        <string>127.0.0.1</string>
+    </array>
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/Users/wangruifan/.local/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+        <key>DATA_DIR</key>
+        <string>/Users/wangruifan/.open-webui</string>
+        <key>WEBUI_HOST</key>
+        <string>127.0.0.1</string>
+        <key>AIOHTTP_CLIENT_TIMEOUT</key>
+        <string>1800</string>
+        <key>CORS_ALLOW_ORIGIN</key>
+        <string>http://localhost:8080;http://127.0.0.1:8080</string>
+    </dict>
+    <key>WorkingDirectory</key>
+    <string>/Users/wangruifan</string>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <true/>
+    <key>StandardOutPath</key>
+    <string>/Users/wangruifan/.open-webui/server.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/wangruifan/.open-webui/server.error.log</string>
+</dict>
+</plist>

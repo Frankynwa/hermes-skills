@@ -1,0 +1,22 @@
+# TARGET_FLAGS for aarch64-linux-gnu on RK3568
+
+CROSS_COMPILE ?= aarch64-linux-gnu-
+CC  := $(CROSS_COMPILE)gcc
+CXX := $(CROSS_COMPILE)g++
+AR  := $(CROSS_COMPILE)ar
+
+CFLAGS   += -mcpu=cortex-a55 -march=armv8-a -mtune=cortex-a55 -O2
+LDFLAGS  += -Wl,--gc-sections -Wl,-O1
+
+SYSROOT  ?= /opt/rk3568-sysroot
+ifneq ($(wildcard $(SYSROOT)/usr/lib),)
+  CFLAGS  += --sysroot=$(SYSROOT)
+  LDFLAGS += --sysroot=$(SYSROOT)
+endif
+
+# Required libraries
+LIBS := -llvgl -ldrm -lm -lpthread -lrt
+
+# LVGL config
+CFLAGS += -DLV_CONF_INCLUDE_SIMPLE -DLV_LVGL_H_INCLUDE_SIMPLE
+CFLAGS += -DLV_CONF_PATH=\"$(PWD)/lv_conf_rk3568.h\"

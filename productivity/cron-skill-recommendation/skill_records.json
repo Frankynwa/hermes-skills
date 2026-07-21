@@ -1,0 +1,114 @@
+{
+  "fields": [
+    "Skill名称",
+    "分类",
+    "评分",
+    "日期",
+    "作者",
+    "使用场景",
+    "Skill链接",
+    "推荐理由"
+  ],
+  "rows": [
+    [
+      "hermes-workspace",
+      "开发工具",
+      5,
+      "2026-06-02",
+      "outsourc-e",
+      "Hermes Agent 的 Web 图形化工作台，集成聊天、终端、记忆浏览器、技能管理器和代码检查器，是 Hermes 生态最完整的 GUI，2026 年 Nous Hackathon 获奖作品",
+      "https://github.com/outsourc-e/hermes-workspace",
+      "生产级成熟度，一站式 Hermes 操作界面，极大降低使用门槛，支持团队协作和多任务管理，500+ stars"
+    ],
+    [
+      "open-design",
+      "创意设计",
+      5,
+      "2026-06-02",
+      "nexu-io",
+      "本地优先的开源 Claude Design 替代方案，31 个可组合技能覆盖 Web/移动端/演示/仪表盘/文档设计，支持 129+ 设计系统，集成图像/视频/音频生成能力",
+      "https://github.com/nexu-io/open-design",
+      "28k+ stars，完全替代 Anthropic 闭源设计工具，通过 ACP/JSON-RPC 与 Hermes 原生集成，支持 15 种编码代理 CLI 自动检测"
+    ],
+    [
+      "wondelai/skills",
+      "生产力",
+      5,
+      "2026-06-02",
+      "wondelai",
+      "跨平台代理技能库，兼容 Claude Code 和 agentskills.io 开放标准，是新手入门 Hermes 技能生态的最佳起点，涵盖常见任务场景",
+      "https://github.com/wondelai/skills",
+      "官方推荐的新手首选技能包，380+ stars，跨平台兼容性优秀，社区活跃度最高，是 Hermes 技能生态的基石"
+    ],
+    [
+      "SkillClaw",
+      "AI/ML",
+      5,
+      "2026-06-02",
+      "AMAP-ML",
+      "开源技能进化引擎，从真实会话数据中自动演化、去重、优化技能库，原生集成 ~/.hermes/skills，支持多设备和隔离技能仓管理",
+      "https://github.com/AMAP-ML/SkillClaw",
+      "705 stars，解决技能库维护核心痛点，让 Hermes 的自我改进从被动纠正升级为主动进化，MIT 协议，安全回滚机制保障"
+    ],
+    [
+      "rtk-hermes",
+      "AI/ML",
+      4,
+      "2026-06-02",
+      "ogallotti",
+      "终端输出智能压缩插件，在命令执行结果进入 LLM 上下文窗口前自动压缩，shell 命令实现 60-90% token 减少，11M+ tokens 实测 96.6% 效率",
+      "https://github.com/ogallotti/rtk-hermes",
+      "零配置自动加载，token 节省立竿见影，大幅降低 API 成本，实测 cargo test 90-99%、git log 87%，性价比提升神器"
+    ],
+    [
+      "camofox-browser",
+      "开发工具",
+      4,
+      "2026-06-02",
+      "jo-inc",
+      "隐形无头浏览器服务器，绕过 Cloudflare、机器人检测和反爬虫，Puppeteer/Playwright 替代品，为 Hermes 浏览器自动化提供反检测后端",
+      "https://github.com/jo-inc/camofox-browser",
+      "4k+ stars，解决 VPS 部署 Hermes 时浏览器被封的核心痛点，MIT 协议，生产环境验证，web 自动化任务必备组件"
+    ],
+    [
+      "mission-control",
+      "DevOps",
+      4,
+      "2026-06-02",
+      "builderz-labs",
+      "开源 AI 代理编排仪表盘，管理代理舰队、派发任务、追踪成本、协调多代理工作流，自托管 SQLite 驱动，3.7k+ stars",
+      "https://github.com/builderz-labs/mission-control",
+      "适合同时运行多个 Hermes 实例的团队，统一可视化管理和成本监控，目前最成熟的代理编排平台，生产级质量"
+    ],
+    [
+      "MeiGen-AI-Design-MCP",
+      "创意设计",
+      4,
+      "2026-06-02",
+      "jau123",
+      "MCP 服务器一站式接入 9 大 AI 图像/视频模型（GPT Image 2、Midjourney V8.1、Seedance 2.0 等），支持云端/API/离线 ComfyUI 三种后端模式",
+      "https://github.com/jau123/MeiGen-AI-Design-MCP",
+      "1k+ stars，集成 9 个主流 AI 生成模型到一个 MCP 接口，支持完全离线使用，README 提供 Hermes 专用 YAML 配置模板"
+    ],
+    [
+      "Anthropic-Cybersecurity-Skills",
+      "研究",
+      4,
+      "2026-06-02",
+      "mukul975",
+      "753+ 结构化网络安全技能，按 MITRE ATT&CK 框架映射，涵盖渗透测试、威胁分析、安全审计，是目前最全面的代理安全技能集",
+      "https://github.com/mukul975/Anthropic-Cybersecurity-Skills",
+      "4k+ stars，安全领域最权威的代理技能集，MITRE ATT&CK 对齐使安全操作标准化，适合安全团队和企业合规场景"
+    ],
+    [
+      "hermes-nextcloud",
+      "DevOps",
+      4,
+      "2026-06-02",
+      "adnw-vinc",
+      "自托管 Nextcloud 桥梁，通过 WebDAV/CalDAV/CardDAV 管理文件、笔记、日历/任务和联系人，App Password 认证，完全自托管部署",
+      "https://github.com/adnw-vinc/hermes-nextcloud",
+      "填补 Hermes 自托管云生态空白，适合隐私敏感用户和自建基础设施团队，配置引导完善，开箱即用"
+    ]
+  ]
+}

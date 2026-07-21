@@ -1,0 +1,21 @@
+# Hermes internal files
+.usage.json
+.curator_state
+.curator_backups/
+.bundled_manifest
+.hub/
+
+# Archived (old versions, not needed for sync)
+.archive/
+
+# macOS
+.DS_Store
+**/.DS_Store
+
+# Python
+__pycache__/
+**/__pycache__/
+*.pyc
+
+# Lock files
+.usage.json.lock

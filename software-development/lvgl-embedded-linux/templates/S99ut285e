@@ -1,0 +1,46 @@
+#!/bin/sh
+# ============================================================
+# /etc/init.d/S99ut285e — BusyBox init startup script template
+# ============================================================
+# Install:  cp S99ut285e /etc/init.d/ && chmod +x /etc/init.d/S99ut285e
+# Manual:   /etc/init.d/S99ut285e {start|stop|restart}
+
+DAEMON="/usr/bin/ut285e_rk3568"
+PIDFILE="/var/run/ut285e.pid"
+LOGFILE="/var/log/ut285e.log"
+WATCHDOG_DEV="/dev/watchdog"
+
+start() {
+    echo "Starting UT285E UI..."
+    if [ ! -x "$DAEMON" ]; then echo "ERROR: $DAEMON not found"; return 1; fi
+
+    [ -e /dev/dri/card0 ] && export LVGL_DRM_DEVICE=/dev/dri/card0
+
+    start-stop-daemon -S -b -m -p "$PIDFILE" -x "$DAEMON" -- >> "$LOGFILE" 2>&1
+
+    if [ $? -eq 0 ]; then
+        echo "UT285E started (PID $(cat $PIDFILE))"
+        if [ -c "$WATCHDOG_DEV" ]; then
+            (while kill -0 $(cat "$PIDFILE") 2>/dev/null; do echo > "$WATCHDOG_DEV"; sleep 5; done) &
+        fi
+    else
+        echo "ERROR: Failed to start"; return 1
+    fi
+}
+
+stop() {
+    if [ -f "$PIDFILE" ]; then
+        PID=$(cat "$PIDFILE")
+        kill "$PID" 2>/dev/null
+        for i in 1 2 3; do kill -0 "$PID" 2>/dev/null || break; sleep 1; done
+        kill -9 "$PID" 2>/dev/null
+        rm -f "$PIDFILE"
+    fi
+}
+
+case "$1" in
+    start)   start ;;
+    stop)    stop ;;
+    restart) stop; sleep 1; start ;;
+    *)       echo "Usage: $0 {start|stop|restart}"; exit 1 ;;
+esac
