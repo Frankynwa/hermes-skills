@@ -146,7 +146,9 @@ Open WebUI → proxy(:8643) → Hermes API(:8642)
 
 The proxy uses `aiohttp`. Tool emojis are defined in `TOOL_EMOJI` dict. It handles SSE character-by-character, matches `event:` lines to set context, then translates matching `data:` payloads.
 
-**SSE Heartbeat (browser keepalive):** macOS Safari/Chrome aggressively throttle background tabs, causing SSE connections to drop and Open WebUI to show "重新连接中". The proxy sends `: heartbeat\n\n` (SSE comment, invisible to clients) every 5 seconds to keep TCP alive. Uses `asyncio.Lock` to prevent heartbeat vs data write races.
+**SSE Heartbeat (browser keepalive):** macOS Safari/Chrome aggressively throttle background tabs, causing SSE connections to drop. The proxy sends an empty OpenAI content chunk (`data: {"choices":[{"delta":{"content":""}}]}\n\n`) every 5 seconds. Must be real SSE data, NOT SSE comments (`: heartbeat\n\n`), because comments don't reset aiohttp's `sock_read` timeout. Uses `asyncio.Lock` to prevent heartbeat vs data write races.
+
+**Heartbeat history:** Original used SSE comments — but this was the root cause of`TransferEncodingError` during long sessions. Changed to real data frames July 2026.
 
 **Launchd plist:** `~/Library/LaunchAgents/com.hermes.tool-proxy.plist`
 ```xml
@@ -185,6 +187,43 @@ curl -s -N --max-time 30 http://127.0.0.1:8643/v1/chat/completions \
 launchctl kickstart -k gui/$(id -u)/com.hermes.tool-proxy
 curl -s http://127.0.0.1:8643/health  # verify
 ```
+
+### TransferEncodingError Troubleshooting (Open WebUI)
+
+**Symptom:** Open WebUI shows `Response payload is not completed: <TransferEncodingError: 400, message='Not enough data to satisfy transfer length header.'>` — most common during 20min autonomous mode or other long-running tasks.
+
+**Root cause chain:**
+1. MiMo API rate limits (HTTP 429) due to too many concurrent sessions
+2. Fallback to DeepSeek, which can timeout (`peer closed connection without sending complete message body`)
+3. Hermes gateway's SSE response to proxy gets mid-stream truncation → chunked encoding breaks
+4. Proxy forwards broken chunks to Open WebUI → `TransferEncodingError`
+
+**Diagnostic workflow:**
+```bash
+# Step 1: Check proxy stderr for client disconnect errors
+tail -30 ~/.open-webui/hermes-proxy.stderr.log
+
+# Step 2: Check gateway error log for upstream API failures
+grep -i "RateLimitError\|TransferEncoding\|incomplete chunked\|peer closed" ~/.hermes/logs/errors.log | tail -10
+
+# Step 3: Check gateway log for the specific API session
+grep "api-<session-id>" ~/.hermes/logs/gateway.log | tail -20
+```
+
+**Key log patterns:**
+| Pattern | Meaning |
+|---------|---------|
+| `HTTP 429: quota exhausted` on xiaomi | MiMo rate limited — too many concurrent sessions |
+| `peer closed connection without sending complete message body (incomplete chunked read)` | DeepSeek dropped the stream mid-response |
+| `ClientConnectionResetError: Cannot write to closing transport` in proxy stderr | OpenWebUI client already disconnected; the fix is to handle upstream errors before client disconnects |
+| `Stream stale for 180s` | Agent detects 3-min silence from model, kills connection |
+
+**Proxy-side fixes applied (July 2026):**
+1. **Heartbeat changed from SSE comments to real data frames** — `: heartbeat\n\n` doesn't reset aiohttp's `sock_read` timeout; empty OpenAI content chunks (`data: {"choices":[{"delta":{"content":""}}]}\n\n`) do.
+2. **Upstream exception caught and cleaned** — when gateway's chunked encoding breaks, the proxy catches `aiohttp.ClientPayloadError` / `ClientConnectionError` / `asyncio.TimeoutError` and sends a clean `⚠️ 连接中断` message + `[DONE]` to OpenWebUI instead of letting corrupted chunks reach the frontend.
+3. **`sock_read=120` timeout on upstream connection** — proxy detects gateway hang after 120s and sends clean termination rather than waiting indefinitely.
+
+**Concurrency warning:** The real culprit is MiMo rate limiting. Check active sessions with `ps aux | grep hermes | grep -v grep`. If 3+ sessions are running simultaneously, consider reducing concurrency or switching primary to a provider with higher quota.
 
 ## Part 3: Open WebUI Operations
 

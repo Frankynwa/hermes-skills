@@ -1,0 +1,313 @@
+<!--
+  BaZi Quantified Visualization Template
+  Usage: Replace placeholder data with actual BaZi calculations.
+  Requires: Chart.js 4.x via CDN (needs internet for Chrome headless PDF generation)
+  
+  Chart types included:
+  1. wuxingChart - Doughnut: Five Elements distribution
+  2. shishenChart - Horizontal Bar: Ten Gods strength
+  3. radarChart - Radar: Personality dimensions
+  4. changshengChart - Vertical Bar: Day master growth states
+  5. dayunChart - Line: Luck period elemental changes
+  6. scoreChart - Grouped Bar: Dimensional scores (original vs current year)
+  
+  Color scheme (dark theme, tested and verified):
+  - Background: #0a0a0f
+  - Cards: linear-gradient(145deg, #1a1a2e, #16213e)
+  - Water: #38bdf8, Wood: #4ade80, Fire: #f87171, Earth: #fbbf24, Metal: #a5b4fc
+  - Accent: linear-gradient(135deg, #f0c27f, #fc5c7d) for title
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>八字命盘量化分析</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, "PingFang SC", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+  background: #0a0a0f; color: #e0e0e0; padding: 30px; min-height: 100vh;
+}
+.container { max-width: 1100px; margin: 0 auto; }
+h1 {
+  text-align: center; font-size: 28px;
+  background: linear-gradient(135deg, #f0c27f, #fc5c7d);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  margin-bottom: 6px;
+}
+.subtitle { text-align: center; color: #888; font-size: 13px; margin-bottom: 30px; }
+
+/* Four Pillars Grid */
+.bazi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 30px; }
+.bazi-pillar {
+  background: linear-gradient(145deg, #1a1a2e, #16213e);
+  border-radius: 14px; padding: 18px 12px; text-align: center;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+.bazi-pillar .label { font-size: 11px; color: #888; margin-bottom: 10px; letter-spacing: 2px; }
+.bazi-pillar .tg { font-size: 36px; font-weight: 800; margin-bottom: 6px; }
+.bazi-pillar .dz { font-size: 32px; font-weight: 800; margin-bottom: 8px; }
+.bazi-pillar .info { font-size: 11px; color: #aaa; line-height: 1.6; }
+.bazi-pillar .shishen {
+  display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; margin-top: 6px;
+}
+
+/* Element colors */
+.tg-wood, .dz-wood { color: #4ade80; }
+.tg-fire, .dz-fire { color: #f87171; }
+.tg-earth, .dz-earth { color: #fbbf24; }
+.tg-metal, .dz-metal { color: #a5b4fc; }
+.tg-water, .dz-water { color: #38bdf8; }
+
+/* Shishen tag colors */
+.ss-zhengguan { background: rgba(74,222,128,0.2); color: #4ade80; }
+.ss-zhengcai { background: rgba(56,189,248,0.2); color: #38bdf8; }
+.ss-shangguan { background: rgba(165,180,252,0.2); color: #a5b4fc; }
+.ss-bijian { background: rgba(251,191,36,0.2); color: #fbbf24; }
+.ss-piancai { background: rgba(103,232,249,0.2); color: #67e8f9; }
+.ss-zhengyin { background: rgba(251,146,60,0.2); color: #fb923c; }
+.ss-pianyin { background: rgba(251,146,60,0.15); color: #fb923c; }
+.ss-qisha { background: rgba(248,113,113,0.2); color: #f87171; }
+.ss-shishen { background: rgba(248,113,113,0.15); color: #f87171; }
+
+/* Chart cards */
+.chart-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
+.chart-card {
+  background: linear-gradient(145deg, #1a1a2e, #16213e);
+  border-radius: 14px; padding: 20px; border: 1px solid rgba(255,255,255,0.06);
+}
+.chart-card h3 {
+  font-size: 15px; color: #ccc; margin-bottom: 14px;
+  padding-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.chart-card canvas { max-height: 280px; }
+
+/* Yung-Shen row */
+.yongshen-row { display: flex; gap: 12px; margin-bottom: 24px; }
+.yongshen-item {
+  flex: 1; background: linear-gradient(145deg, #1a1a2e, #16213e);
+  border-radius: 10px; padding: 14px; text-align: center;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+.yongshen-item .emoji { font-size: 28px; margin-bottom: 6px; }
+.yongshen-item .label { font-size: 12px; color: #999; }
+.yongshen-item .value { font-size: 16px; font-weight: 700; margin-top: 4px; }
+
+/* Luck timeline */
+.dayun-timeline {
+  background: linear-gradient(145deg, #1a1a2e, #16213e);
+  border-radius: 14px; padding: 24px; border: 1px solid rgba(255,255,255,0.06); margin-bottom: 24px;
+}
+.dayun-timeline h3 {
+  font-size: 15px; color: #ccc; margin-bottom: 16px;
+  padding-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.dayun-bar { display: flex; gap: 3px; margin-bottom: 14px; }
+.dayun-segment {
+  flex: 1; text-align: center; padding: 10px 4px; border-radius: 8px;
+  font-size: 12px; font-weight: 600;
+}
+.dayun-segment.active { box-shadow: 0 0 12px rgba(252,92,125,0.5); border: 1px solid #fc5c7d; }
+.dayun-segment .age { font-size: 10px; color: #999; display: block; margin-top: 3px; }
+
+/* Highlight box */
+.liunian-box {
+  background: linear-gradient(135deg, #1a1a2e, #2d1b69);
+  border: 1px solid rgba(139,92,246,0.3); border-radius: 14px; padding: 24px; margin-bottom: 24px;
+  position: relative; overflow: hidden;
+}
+.liunian-box h3 { font-size: 18px; color: #c4b5fd; margin-bottom: 12px; }
+.highlight-tag {
+  display: inline-block; background: rgba(139,92,246,0.3); color: #c4b5fd;
+  padding: 3px 12px; border-radius: 20px; font-size: 12px; margin: 3px 4px 3px 0;
+}
+
+/* Summary grid */
+.summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
+
+.footer {
+  text-align: center; color: #555; font-size: 11px;
+  margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.05);
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+<!-- TITLE — replace with actual name and info -->
+<h1>NAME · 八字命盘量化分析</h1>
+<p class="subtitle">BIRTH_DATE · BIRTH_PLACE · GENDER</p>
+
+<!-- FOUR PILLARS — replace stem/branch/shishen with actual data -->
+<div class="bazi-grid">
+  <div class="bazi-pillar">
+    <div class="label">年 柱</div>
+    <div class="tg ELEMENT_CLASS">YEAR_TG</div>
+    <div class="dz ELEMENT_CLASS">YEAR_DZ</div>
+    <div class="info">NAYIN</div>
+    <div class="shishen SHISHEN_CLASS">SHISHEN</div>
+  </div>
+  <!-- Repeat for 月柱, 日柱 (with highlight style), 时柱 -->
+</div>
+
+<!-- CHARTS — replace data arrays with actual values -->
+<div class="chart-row">
+  <div class="chart-card">
+    <h3>🔥 五行力量分布（含藏干权重）</h3>
+    <canvas id="wuxingChart"></canvas>
+  </div>
+  <div class="chart-card">
+    <h3>⚔️ 十神力量对比</h3>
+    <canvas id="shishenChart"></canvas>
+  </div>
+</div>
+
+<div class="yongshen-row">
+  <!-- Replace with actual 喜用忌神 -->
+  <div class="yongshen-item"><div class="emoji">🌳</div><div class="label">喜神</div><div class="value" style="color:#4ade80;">木</div></div>
+  <!-- ... -->
+</div>
+
+<div class="chart-row">
+  <div class="chart-card"><h3>🧠 性格维度雷达</h3><canvas id="radarChart"></canvas></div>
+  <div class="chart-card"><h3>📈 十二长生状态</h3><canvas id="changshengChart"></canvas></div>
+</div>
+
+<div class="dayun-timeline">
+  <h3>🕰️ 大运时间线</h3>
+  <div class="dayun-bar">
+    <!-- Replace with actual 大运 segments, mark current with .active -->
+  </div>
+</div>
+
+<div class="liunian-box">
+  <h3>🔮 CURRENT_YEAR 流年核心分析</h3>
+  <div><!-- highlight-tags --></div>
+</div>
+
+<div class="chart-row">
+  <div class="chart-card"><h3>📊 大运五行力量变化</h3><canvas id="dayunChart"></canvas></div>
+  <div class="chart-card"><h3>🎯 核心维度评分</h3><canvas id="scoreChart"></canvas></div>
+</div>
+
+<!-- SUMMARY GRID -->
+<div style="background:linear-gradient(145deg,#1a1a2e,#16213e); border-radius:14px; padding:24px; border:1px solid rgba(255,255,255,0.06); margin-bottom:24px;">
+  <h3 style="font-size:15px; color:#ccc; margin-bottom:14px; padding-bottom:8px; border-bottom:1px solid rgba(255,255,255,0.08);">📋 格局总结</h3>
+  <div class="summary-grid">
+    <div><div style="font-size:12px;color:#888;">主格局</div><div style="font-size:18px;font-weight:700;color:#fbbf24;">PATTERN_NAME</div></div>
+    <div><div style="font-size:12px;color:#888;">核心矛盾</div><div style="font-size:18px;font-weight:700;color:#f87171;">CONFLICT</div></div>
+    <div><div style="font-size:12px;color:#888;">最大短板</div><div style="font-size:18px;font-weight:700;color:#38bdf8;">WEAKNESS</div></div>
+    <div><div style="font-size:12px;color:#888;">最大优势</div><div style="font-size:18px;font-weight:700;color:#4ade80;">STRENGTH</div></div>
+  </div>
+</div>
+
+<div class="footer">NAME · 八字命盘量化分析 · DATE</div>
+</div>
+
+<script>
+// === REPLACE ALL DATA BELOW WITH ACTUAL BAZI CALCULATIONS ===
+
+// Chart 1: Five Elements Doughnut
+new Chart(document.getElementById('wuxingChart'), {
+  type: 'doughnut',
+  data: {
+    labels: ['金 XX%', '土 XX%', '水 XX%', '木 XX%', '火 XX%'],
+    datasets: [{ data: [37.1, 34.9, 13.6, 12.9, 1.5],
+      backgroundColor: ['#a5b4fc', '#fbbf24', '#38bdf8', '#4ade80', '#f87171'], borderWidth: 0 }]
+  },
+  options: { responsive: true, plugins: { legend: { position: 'bottom',
+    labels: { color: '#aaa', font: { size: 12 }, padding: 12 } } } }
+});
+
+// Chart 2: Ten Gods Horizontal Bar
+new Chart(document.getElementById('shishenChart'), {
+  type: 'bar',
+  data: {
+    labels: ['伤官', '比肩/劫财', '食神', '正财', '正官', '偏财', '正印'],
+    datasets: [{ label: '力量指数', data: [85, 75, 65, 45, 35, 25, 15],
+      backgroundColor: ['#a5b4fc','#fbbf24','#f87171','#38bdf8','#4ade80','#67e8f9','#fb923c'],
+      borderRadius: 6, borderWidth: 0 }]
+  },
+  options: { indexAxis: 'y', responsive: true, plugins: { legend: { display: false } },
+    scales: {
+      x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#888' } },
+      y: { grid: { display: false }, ticks: { color: '#ccc', font: { size: 12 } } }
+    } }
+});
+
+// Chart 3: Personality Radar
+new Chart(document.getElementById('radarChart'), {
+  type: 'radar',
+  data: {
+    labels: ['创造力', '稳定性', '叛逆性', '理财力', '执行力', '社交力', '学习力', '领导力'],
+    datasets: [{ label: 'NAME', data: [90, 85, 80, 70, 55, 50, 75, 45],
+      backgroundColor: 'rgba(139,92,246,0.2)', borderColor: '#8b5cf6',
+      borderWidth: 2, pointBackgroundColor: '#8b5cf6' }]
+  },
+  options: { responsive: true, scales: { r: {
+    beginAtZero: true, max: 100,
+    grid: { color: 'rgba(255,255,255,0.08)' },
+    pointLabels: { color: '#ccc', font: { size: 11 } }, ticks: { display: false }
+  } }, plugins: { legend: { display: false } } }
+});
+
+// Chart 4: Twelve Growth States
+new Chart(document.getElementById('changshengChart'), {
+  type: 'bar',
+  data: {
+    labels: ['YEAR_DZ\nSTATE', 'MONTH_DZ\nSTATE', 'DAY_DZ\nSTATE', 'HOUR_DZ\nSTATE'],
+    datasets: [{ label: '旺衰指数', data: [15, 50, 25, 35],
+      backgroundColor: ['#ef4444', '#eab308', '#f97316', '#f59e0b'],
+      borderRadius: 6, borderWidth: 0 }]
+  },
+  options: { responsive: true,
+    plugins: { legend: { display: false },
+      title: { display: true, text: 'DAY_MASTER在四柱地支的长生状态', color: '#888', font: { size: 11 } } },
+    scales: {
+      x: { grid: { display: false }, ticks: { color: '#ccc', font: { size: 11 } } },
+      y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#888' }, max: 100 }
+    } }
+});
+
+// Chart 5: Luck Period Elemental Changes
+new Chart(document.getElementById('dayunChart'), {
+  type: 'line',
+  data: {
+    labels: ['DAYUN_LABELS...'],
+    datasets: [
+      { label: '火(调候)', data: [/*...*/], borderColor: '#f87171', fill: true, tension: 0.3 },
+      { label: '木(官杀)', data: [/*...*/], borderColor: '#4ade80', fill: true, tension: 0.3 },
+      { label: '水(财星)', data: [/*...*/], borderColor: '#38bdf8', fill: true, tension: 0.3 }
+    ]
+  },
+  options: { responsive: true,
+    plugins: { legend: { labels: { color: '#aaa', font: { size: 11 } } } },
+    scales: {
+      x: { grid: { display: false }, ticks: { color: '#ccc', font: { size: 10 } } },
+      y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#888' }, max: 80 }
+    } }
+});
+
+// Chart 6: Dimensional Scores (original vs current year)
+new Chart(document.getElementById('scoreChart'), {
+  type: 'bar',
+  data: {
+    labels: ['事业潜力', '财运指数', '学业运', '健康指数', '感情运', '贵人运', '抗压力', '创造力'],
+    datasets: [
+      { label: '原局评分', data: [/*...*/],
+        backgroundColor: 'rgba(139,92,246,0.4)', borderColor: '#8b5cf6', borderWidth: 1, borderRadius: 4 },
+      { label: 'CURRENT_YEAR评分', data: [/*...*/],
+        backgroundColor: 'rgba(252,92,125,0.4)', borderColor: '#fc5c7d', borderWidth: 1, borderRadius: 4 }
+    ]
+  },
+  options: { responsive: true,
+    plugins: { legend: { labels: { color: '#aaa', font: { size: 11 } } } },
+    scales: {
+      x: { grid: { display: false }, ticks: { color: '#ccc', font: { size: 10 } } },
+      y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#888' }, max: 100 }
+    } }
+});
+</script>
+</body>
+</html>
