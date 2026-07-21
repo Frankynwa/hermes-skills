@@ -1,27 +1,25 @@
 # Hermes Skills
 
-> Personal skill collection for [Hermes Agent](https://github.com/NousResearch/hermes-agent) — **216 skills** across **64 categories**.
+> Personal skill collection for [Hermes Agent](https://github.com/NousResearch/hermes-agent) — **170 skills** across **60 categories**.
 
 ## 📋 Overview
 
-- **🍎 Apple / macOS** — 5 skills
-- **🤖 Autonomous AI Agents** — 9 skills
+- **🍎 Apple / macOS** — 4 skills
+- **🤖 Autonomous AI Agents** — 7 skills
 - **📊 Backtesting** — 1 skill
 - **✅ Best Practices** — 1 skill
-- **💬 Communication** — 1 skill
-- **🎨 Creative** — 30 skills
+- **🎨 Creative** — 22 skills
 - **📈 Data Science** — 1 skill
-- **🔧 DevOps** — 8 skills
-- **📝 DOCX** — 1 skill
-- **🐶 Dogfood / QA** — 2 skills
+- **🔧 DevOps** — 5 skills
+- **🐶 Dogfood / QA** — 1 skill
 - **🔒 Domain / Security** — 2 skills
 - **📧 Email** — 1 skill
-- **🔌 Embedded** — 3 skills
-- **📟 Embedded Instrument UI** — 1 skill
-- **📡 Embedded Signal Processing** — 2 skills
-- **💰 Finance** — 7 skills
+- **🔌 Embedded** — 1 skill
+- **📡 Embedded Signal Processing** — 1 skill
+- **💰 Finance** — 5 skills
+- **📦 fitness** — 2 skills
 - **📋 Git Commit** — 2 skills
-- **🐙 GitHub** — 6 skills
+- **🐙 GitHub** — 1 skill
 - **🔥 Grill Me** — 1 skill
 - **🔥 Grill with Docs** — 1 skill
 - **⚙️ Hermes Operations** — 5 skills
@@ -57,24 +55,19 @@
 - **🔌 MCP** — 1 skill
 - **🎬 Media** — 6 skills
 - **🤖 MLOps** — 1 skill
-- **📝 Note Taking** — 1 skill
 - **📕 PDF** — 1 skill
 - **📽️ PPTX** — 1 skill
-- **⚡ Productivity** — 25 skills
+- **⚡ Productivity** — 17 skills
 - **♻️ Refactor** — 1 skill
-- **🔬 Research** — 15 skills
-- **🏠 Smart Home** — 1 skill
+- **🔬 Research** — 14 skills
 - **📱 Social Media** — 1 skill
-- **💻 Software Development** — 41 skills
+- **💻 Software Development** — 32 skills
 - **📊 XLSX** — 1 skill
 - **🤖 Yuanbao** — 1 skill
 
 ---
 
 ## 🍎 Apple / macOS
-
-- **`apple-notes`** — Manage Apple Notes via memo CLI: create, search, edit.
-  `apple/apple-notes/`
 
 - **`apple-reminders`** — Apple Reminders via remindctl: add, list, complete.
   `apple/apple-reminders/`
@@ -94,9 +87,6 @@
 - **`claude-code`** — Delegate coding to Claude Code CLI (features, PRs).
   `autonomous-ai-agents/claude-code/`
 
-- **`codex`** — Delegate coding to OpenAI Codex CLI (features, PRs).
-  `autonomous-ai-agents/codex/`
-
 - **`coding-agent-providers`** — Configure and connect coding agents (Claude Code, Codex, Aider, OpenCode, Cline, Continue) to various LLM providers. Covers provider compatibility matrices, config formats, API wire protocols, and known incompatibilities. Use when user asks to con...
   `autonomous-ai-agents/coding-agent-providers/`
 
@@ -105,9 +95,6 @@
 
 - **`hermes-agent`** — Complete guide to using and extending Hermes Agent — CLI usage, setup, configuration, spawning additional agents, gateway platforms, skills, voice, tools, profiles, and a concise contributor reference. Load this skill when helping users configure ...
   `autonomous-ai-agents/hermes-agent/`
-
-- **`hermes-cc-codex-collaboration`** — Hermes + Claude Code + Codex 三方协作方案：分工策略、调用方式、最佳实践
-  `autonomous-ai-agents/hermes-cc-codex-collaboration/`
 
 - **`kanban-codex-lane`** — Use when a Hermes Kanban worker wants to run Codex CLI as an isolated implementation lane while Hermes keeps ownership of task lifecycle, reconciliation, testing, and handoff.
   `autonomous-ai-agents/kanban-codex-lane/`
@@ -131,19 +118,10 @@
   `best-practices/`
 
 
-## 💬 Communication
-
-- **`one-three-one-rule`** — >
-  `communication/one-three-one-rule/`
-
-
 ## 🎨 Creative
 
 - **`ai-sprite-generation`** — Generate consistent AI cartoon sprite sets for browser extensions, games, or desktop pets. Covers DashScope Wanx API, Draw Things local generation, and Pillow fallback. Use when generating character sprite sheets, game assets, or desktop pet images.
   `creative/ai-sprite-generation/`
-
-- **`algorithmic-art`** — Creating algorithmic art using p5.js with seeded randomness and interactive
-  `creative/algorithmic-art/`
 
 - **`architecture-diagram`** — Dark-themed SVG architecture/cloud/infra diagrams as HTML.
   `creative/architecture-diagram/`
@@ -156,12 +134,6 @@
 
 - **`baoyu-article-illustrator`** — Article illustrations: type × style × palette consistency.
   `creative/baoyu-article-illustrator/`
-
-- **`baoyu-comic`** — Knowledge comics (知识漫画): educational, biography, tutorial.
-  `creative/baoyu-comic/`
-
-- **`baoyu-infographic`** — Infographics: 21 layouts x 21 styles (信息图, 可视化).
-  `creative/baoyu-infographic/`
 
 - **`brand-guidelines`** — Applies Anthropic's official brand colors and typography to any sort
   `creative/brand-guidelines/`
@@ -181,23 +153,14 @@
 - **`draw-things-api`** — Generate images via Draw Things HTTP API on macOS. Covers connection, parameters, model pitfalls, and style-consistent sprite generation. Use when user wants to generate images locally via Draw Things or mentions Draw Things API/CLI/gRPC/MCP.
   `creative/draw-things-api/`
 
-- **`draw-things-integration`** — Programmatically generate images using Draw Things (macOS local AI image generation app). Covers HTTP API, MCP server, gRPC, CLI tools, and JavaScript scripting API. Use when the user wants to generate images via Draw Things from the terminal or a...
-  `creative/draw-things-integration/`
-
 - **`excalidraw`** — Hand-drawn Excalidraw JSON diagrams (arch, flow, seq).
   `creative/excalidraw/`
-
-- **`frontend-design`** — Create distinctive, production-grade frontend interfaces with high design
-  `creative/frontend-design/`
 
 - **`handwrite-pdf-rendering`** — >
   `creative/handwrite-pdf-rendering/`
 
 - **`ideation`** — Generate project ideas via creative constraints.
   `creative/creative-ideation/`
-
-- **`manim-video`** — Manim CE animations: 3Blue1Brown math/algo videos.
-  `creative/manim-video/`
 
 - **`p5js`** — p5.js sketches: gen art, shaders, interactive, 3D.
   `creative/p5js/`
@@ -217,14 +180,8 @@
 - **`slack-gif-creator`** — Knowledge and utilities for creating animated GIFs optimized for Slack.
   `creative/slack-gif-creator/`
 
-- **`songwriting-and-ai-music`** — Songwriting craft and Suno AI music prompts.
-  `creative/songwriting-and-ai-music/`
-
 - **`theme-factory`** — Toolkit for styling artifacts with a theme. These artifacts can be slides,
   `creative/theme-factory/`
-
-- **`touchdesigner-mcp`** — Control a running TouchDesigner instance via twozero MCP — create operators, set parameters, wire connections, execute Python, build real-time visuals. 36 native tools.
-  `creative/touchdesigner-mcp/`
 
 - **`web-design-guidelines`** — Review UI code for Web Interface Guidelines compliance. Use when asked
   `creative/web-design-guidelines/`
@@ -241,9 +198,6 @@
 - **`ci-cd-and-automation`** — Automates CI/CD pipeline setup. Use when setting up or modifying build
   `devops/ci-cd-and-automation/`
 
-- **`deploy-to-vercel`** — Deploy applications and websites to Vercel. Use when the user requests
-  `devops/deploy-to-vercel/`
-
 - **`embedded-hw-sw-gap-analysis`** — Use when integrating embedded Linux software with custom hardware — systematically cross-reference schematics, SoC datasheets, UI design PDFs, and codebase to extract hardware information gaps that block deployment.
   `devops/embedded-hw-sw-gap-analysis/`
 
@@ -253,26 +207,11 @@
 - **`kanban-orchestrator`** — Decomposition playbook + anti-temptation rules for an orchestrator profile routing work through Kanban. The "don't do the work yourself" rule and the basic lifecycle are auto-injected into every kanban worker's system prompt; this skill is the dee...
   `devops/kanban-orchestrator/`
 
-- **`kanban-worker`** — Pitfalls, examples, and edge cases for Hermes Kanban workers. The lifecycle itself is auto-injected into every worker's system prompt as KANBAN_GUIDANCE (from agent/prompt_builder.py); this skill is what you load when you want deeper detail on spe...
-  `devops/kanban-worker/`
-
 - **`openwebui-config-management`** — Manage Open WebUI configuration — SQLite-backed settings, model endpoints, and macOS launchd lifecycle.
   `devops/openwebui-config-management/`
 
-- **`webhook-subscriptions`** — Webhook subscriptions: event-driven agent runs.
-  `devops/webhook-subscriptions/`
-
-
-## 📝 DOCX
-
-- **`docx`** — Use this skill whenever the user wants to create, read, edit, or manipulate Word documents (.docx files). Triggers include: any mention of 'Word doc', 'word document', '.docx', or requests to produce professional documents with formatting like tab...
-  `docx/`
-
 
 ## 🐶 Dogfood / QA
-
-- **`adversarial-ux-test`** — Roleplay the most difficult, tech-resistant user for your product. Browse the app as that persona, find every UX pain point, then filter complaints through a pragmatism layer to separate real problems from noise. Creates actionable tickets from ge...
-  `dogfood/adversarial-ux-test/`
 
 - **`dogfood`** — Exploratory QA of web apps: find bugs, evidence, reports.
   `dogfood/`
@@ -295,29 +234,14 @@
 
 ## 🔌 Embedded
 
-- **`embedded-lvgl`** — Develop LVGL v9 embedded UIs for ARM Linux (RK3568/Buildroot) — dual-build
-  `embedded/embedded-lvgl/`
-
-- **`lvgl-development`** — LVGL embedded UI development — SDL2 simulator on macOS, rendering pipeline setup, CMake build, debugging crashes/hangs, common pitfalls. Use when building LVGL UIs, setting up simulators, or debugging rendering issues.
-  `embedded/lvgl-development/`
-
 - **`lvgl-embedded-ui`** — Build embedded UIs with LVGL (v9.x) — display drivers, SDL2 simulator, widget patterns, rendering pipeline debugging. Use when creating instrument dashboards, multi-page navigation, chart displays, or any GUI for embedded targets.
   `embedded/lvgl-embedded-ui/`
-
-
-## 📟 Embedded Instrument UI
-
-- **`embedded-instrument-ui`** — |
-  `embedded-instrument-ui/`
 
 
 ## 📡 Embedded Signal Processing
 
 - **`embedded-lvgl-gui`** — LVGL embedded GUI development — environment setup, cross-compilation, display/input driver integration, multi-platform CMake builds. Covers LVGL v9.x on ARM Linux boards (RK3568, STM32, ESP32) with DRM/KMS, framebuffer, SDL2 simulation, libinput/e...
   `embedded-signal-processing/embedded-lvgl-gui/`
-
-- **`signal-processing`** — ADC/DSP signal processing — FFT analysis, filter design (EWMA/IIR/FIR), window function selection, spectrum leakage diagnosis, embedded MCU implementation. Triggers on: FFT, spectrum, ADC, filter design, EWMA, frequency analysis, signal noise, DSP.
-  `embedded-signal-processing/signal-processing/`
 
 
 ## 💰 Finance
@@ -337,11 +261,14 @@
 - **`longbridge-technical`** — |
   `finance/longbridge-technical/`
 
-- **`quant-factor-investing`** — Multi-factor stock selection models, alpha factor construction, market regime adaptive weighting, and ML-based factor optimization for A-share and global markets. Use when building, evaluating, or improving quantitative stock selection engines.
-  `finance/quant-factor-investing/`
 
-- **`stocks`** — Stock quotes, history, search, compare, crypto via Yahoo.
-  `finance/stocks/`
+## 📦 fitness
+
+- **`body-recomposition`** — 身体重组方案（减脂+保肌+体态矫正），基于学术论文证据。适用于体脂偏高、训练新手的暑假自主训练阶段。触发词：减脂、健身、体态、身体重组、增肌减脂、健身房训练。
+  `fitness/body-recomposition/`
+
+- **`fitness-science`** — Evidence-based fitness, body recomposition, posture correction, and nutrition science. Use when the user asks about body type, weight loss, muscle gain, gym programming, posture correction, or nutrition strategy.
+  `fitness/fitness-science/`
 
 
 ## 📋 Git Commit
@@ -357,21 +284,6 @@
 
 - **`codebase-inspection`** — Inspect codebases w/ pygount: LOC, languages, ratios.
   `github/codebase-inspection/`
-
-- **`github-auth`** — GitHub auth setup: HTTPS tokens, SSH keys, gh CLI login.
-  `github/github-auth/`
-
-- **`github-code-review`** — Review PRs: diffs, inline comments via gh or REST.
-  `github/github-code-review/`
-
-- **`github-issues`** — Create, triage, label, assign GitHub issues via gh or REST.
-  `github/github-issues/`
-
-- **`github-pr-workflow`** — GitHub PR lifecycle: branch, commit, open, CI, merge.
-  `github/github-pr-workflow/`
-
-- **`github-repo-management`** — Clone/create/fork repos; manage remotes, releases.
-  `github/github-repo-management/`
 
 
 ## 🔥 Grill Me
@@ -611,12 +523,6 @@
   `mlops/huggingface-hub/`
 
 
-## 📝 Note Taking
-
-- **`obsidian`** — Read, search, create, and edit notes in the Obsidian vault.
-  `note-taking/obsidian/`
-
-
 ## 📕 PDF
 
 - **`pdf`** — Use this skill whenever the user wants to do anything with PDF files. This includes reading or extracting text/tables from PDFs, combining or merging multiple PDFs into one, splitting PDFs apart, rotating pages, adding watermarks, creating new PDF...
@@ -637,9 +543,6 @@
 - **`airtable`** — Airtable REST API via curl. Records CRUD, filters, upserts.
   `productivity/airtable/`
 
-- **`anything-to-notebooklm`** — 多源内容智能处理器：支持微信公众号、网页、YouTube、播客（小宇宙/喜马拉雅）、PDF、Markdown等，自动上传到NotebookLM并生成播客/PPT/思维导图等多种格式。支持深度分析模式和飞书文档自动创建
-  `productivity/anything-to-notebooklm/`
-
 - **`autonomous-task-paradigms`** — |
   `productivity/autonomous-task-paradigms/`
 
@@ -655,15 +558,6 @@
 - **`doc-coauthoring`** — Guide users through a structured workflow for co-authoring documentation.
   `productivity/doc-coauthoring/`
 
-- **`feishu-message-format`** — >
-  `productivity/feishu-message-format/`
-
-- **`focuspaw-report`** — Generate FocusPaw HCI course report in MD → HTML → PDF/DOCX. Handles Chinese+English, team info, academic formatting.
-  `productivity/focuspaw-report/`
-
-- **`google-workspace`** — Gmail, Calendar, Drive, Docs, Sheets via gws CLI or Python.
-  `productivity/google-workspace/`
-
 - **`graduate-school-research`** — Research and evaluate graduate school options for international students, especially those with low GPA or non-traditional backgrounds. Covers 15+ countries, professor lookup, GPA policy analysis, MPhil vs MSc distinction, HK/mainland joint-ventur...
   `productivity/graduate-school-research/`
 
@@ -675,12 +569,6 @@
 
 - **`linear`** — Linear: manage issues, projects, teams via GraphQL + curl.
   `productivity/linear/`
-
-- **`macos-file-forensics`** — Analyze a user's work/activity history by scanning local macOS files — Excel data, screenshots, PDFs, app containers. Use when the user asks "what did I do during X period" or "analyze my files from X to Y.
-  `productivity/macos-file-forensics/`
-
-- **`maps`** — Geocode, POIs, routes, timezones via OpenStreetMap/OSRM.
-  `productivity/maps/`
 
 - **`nano-pdf`** — Edit PDF text/typos/titles via nano-pdf CLI (NL prompts).
   `productivity/nano-pdf/`
@@ -696,12 +584,6 @@
 
 - **`psych-nlp-assessment`** — 中文心理语言学特征提取 — 从对话文本中评估依恋维度、图式激活、IFS部分活跃度。用于心理自我觉察和纵向追踪。
   `productivity/psych-nlp-assessment/`
-
-- **`psychological-agent-modeling`** — Model internal psychological systems (IFS Parts, Schema Therapy modes, attachment patterns) as multi-agent AI simulations. Covers theoretical foundations (IFS, Schema, ACT, Attachment, Rogers), NLP-based continuous assessment from Chinese text (Ps...
-  `productivity/psychological-agent-modeling/`
-
-- **`resume-verification-workflow`** — Build, verify, and iteratively refine resumes against actual project code. Use when creating resumes, verifying resume claims, or editing resume content for accuracy.
-  `productivity/resume-verification-workflow/`
 
 - **`teams-meeting-pipeline`** — Operate the Teams meeting summary pipeline via Hermes CLI — summarize meetings, inspect pipeline status, replay jobs, manage Microsoft Graph subscriptions.
   `productivity/teams-meeting-pipeline/`
@@ -720,9 +602,6 @@
 
 - **`ai-technique-evaluation`** — Deep-validate whether an AI technique or product claim is real and worth adopting. 4-layer protocol. Use when the user asks 'is X really effective?' or 'should I adopt Y?'.
   `research/ai-technique-evaluation/`
-
-- **`arxiv`** — Search arXiv papers by keyword, author, category, or ID.
-  `research/arxiv/`
 
 - **`bazi-chart-analysis`** — Chinese BaZi (八字) chart calculation, analysis, visualization, and celebrity comparison. Use when user asks about birth chart, destiny analysis, personality from birth date/time, or Chinese astrology.
   `research/bazi-chart-analysis/`
@@ -761,12 +640,6 @@
   `research/research-paper-writing/`
 
 
-## 🏠 Smart Home
-
-- **`openhue`** — Control Philips Hue lights, scenes, rooms via OpenHue CLI.
-  `smart-home/openhue/`
-
-
 ## 📱 Social Media
 
 - **`xurl`** — X/Twitter via xurl CLI: post, search, DM, media, v2 API.
@@ -802,14 +675,8 @@
 - **`embedded-signal-filter`** — Design, implement, and verify digital signal filters for MCU (EWMA, moving average, IIR). Covers Q16 fixed-point arithmetic, deviation-domain filtering, overflow safety, convergence analysis, and systematic code review for embedded C. Use when: AD...
   `software-development/embedded-signal-filter/`
 
-- **`embedded-ui-html-prototype`** — Use HTML/CSS/JS as primary prototyping tool for embedded UI (LVGL etc.) instead of native simulators. Avoids crashes, slow cycles. Include shell heredoc pattern for safe file writing.
-  `software-development/embedded-ui-html-prototype/`
-
 - **`find-skills`** — Helps users discover and install agent skills when they ask questions
   `software-development/find-skills/`
-
-- **`hermes-agent-skill-authoring`** — Author in-repo SKILL.md: frontmatter, validator, structure.
-  `software-development/hermes-agent-skill-authoring/`
 
 - **`html-prototype-embedded-ui`** — Use HTML/CSS/JS prototypes for embedded UI development when native simulators are unstable. Rapid visual iteration in browser, then translate to C/LVGL code.
   `software-development/html-prototype-embedded-ui/`
@@ -820,26 +687,14 @@
 - **`lvgl-embedded-linux`** — Develop LVGL v9 UI apps for embedded Linux (RK3568/Buildroot) with macOS SDL2 simulator. Use when building LVGL UI, porting to ARM boards, setting up cross-compilation, fixing SDL2 rendering issues on macOS, or configuring LVGL drivers (DRM/fbdev/...
   `software-development/lvgl-embedded-linux/`
 
-- **`lvgl-embedded-porting`** — >-
-  `software-development/lvgl-embedded-porting/`
-
 - **`lvgl-v9-bug-patterns`** — Systematic LVGL v9 bug patterns — event target mismatch, layout overflow, macro redefinition. Run this before code review on any LVGL v9 project.
   `software-development/lvgl-v9-bug-patterns/`
 
 - **`lvgl-v9-development`** — LVGL v9 embedded UI development — page creation patterns, chart API quirks, font configuration pitfalls, and project architecture conventions. Use when adding pages, charts, or troubleshooting LVGL v9 compilation.
   `software-development/lvgl-v9-development/`
 
-- **`mcp-builder`** — Guide for creating high-quality MCP (Model Context Protocol) servers
-  `software-development/mcp-builder/`
-
-- **`node-inspect-debugger`** — Debug Node.js via --inspect + Chrome DevTools Protocol CLI.
-  `software-development/node-inspect-debugger/`
-
 - **`plan`** — Plan mode: write markdown plan to .hermes/plans/, no exec.
   `software-development/plan/`
-
-- **`python-debugpy`** — Debug Python: pdb REPL + debugpy remote (DAP).
-  `software-development/python-debugpy/`
 
 - **`qoder-skills-audit`** — 审查 Qoder Skills 库并配置 Hermes 共享使用
   `software-development/qoder-skills-audit/`
@@ -859,9 +714,6 @@
 - **`skill-creator`** — Create new skills, modify and improve existing skills, and measure skill
   `software-development/skill-creator/`
 
-- **`spike`** — Throwaway experiments to validate an idea before build.
-  `software-development/spike/`
-
 - **`stripe-best-practices`** — Guides Stripe integration decisions — API selection (Checkout Sessions
   `software-development/stripe-best-practices/`
 
@@ -877,9 +729,6 @@
 - **`ui-localization`** — Localize web UI (HTML/JS) to Chinese while preserving DOM ID integrity. Use for batch translations of JavaScript UI prototypes.
   `software-development/ui-localization/`
 
-- **`vercel-optimize`** — Use for Vercel cost and performance optimization on deployed projects,
-  `software-development/vercel-optimize/`
-
 - **`vercel-react-best-practices`** — React and Next.js performance optimization guidelines from Vercel Engineering.
   `software-development/vercel-react-best-practices/`
 
@@ -891,9 +740,6 @@
 
 - **`webapp-testing`** — Toolkit for interacting with and testing local web applications using
   `software-development/webapp-testing/`
-
-- **`workflow-runner`** — 在 Claude Code / OpenClaw / Cursor 中直接运行 agency-orchestrator YAML 工作流——无需 API key，使用当前会话的 LLM 作为执行引擎。当用户提供 .yaml 工作流文件或要求多角色协作完成任务时触发。
-  `software-development/workflow-runner/`
 
 - **`writing-plans`** — Write implementation plans: bite-sized tasks, paths, code.
   `software-development/writing-plans/`

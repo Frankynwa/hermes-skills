@@ -356,7 +356,29 @@ __pycache__/
 *.pyc
 ```
 
-**Pitfall**: `__pycache__/` directories in `pptx/`, `docx/`, `xlsx/` `scripts/office/validators/` contain `.pyc` files. If they were already staged before `.gitignore` was added, they remain tracked — use `git rm --cached $(git ls-files '**/__pycache__/*')` to clean them out after adding the gitignore, then amend.
+**Pitfall (pycache)**: `__pycache__/` directories in `pptx/`, `docx/`, `xlsx/` `scripts/office/validators/` contain `.pyc` files. If they were already staged before `.gitignore` was added, they remain tracked — use `git rm --cached $(git ls-files '**/__pycache__/*')` to clean them out after adding the gitignore, then amend.
+
+**Pitfall (symlinks to `~/.agents/skills/`)**: Hermes often creates locally-authored skills in `~/.agents/skills/` and symlinks them into `~/.hermes/skills/`. Git tracks symlinks (mode 120000) but ONLY stores the link path — NOT the target content. When another device clones the repo, these become dangling symlinks and the skill is effectively lost. **Before committing, replace ALL symlinks with real directory copies**:
+
+```bash
+cd ~/.hermes/skills
+
+# 1. Find all symlinks at the skills root
+find . -maxdepth 1 -type l
+
+# 2. Replace each with a real copy
+for link in $(find . -maxdepth 1 -type l -exec basename {} \;); do
+  git rm --cached "$link" 2>/dev/null   # unstage the symlink
+  rm "$link"                              # remove symlink
+  cp -a ~/.agents/skills/"$link" "$link" # copy real content
+done
+
+# 3. Commit the replacement
+git add -A
+git commit -m "fix: replace symlinks with real directories for cross-device sync"
+```
+
+Verify post-replacement: `find . -maxdepth 1 -type l | wc -l` should return 0.
 
 #### China GFW Workaround
 
