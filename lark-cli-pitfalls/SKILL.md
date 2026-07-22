@@ -1,8 +1,10 @@
 ---
 name: lark-cli-pitfalls
 version: 1.2.0
-description: "Session-discovered pitfalls, workflows, capability map, and evolution directions for lark-cli. Supplements hub-installed lark-shared with real-world gotchas, official capability reference, and doc-access techniques."
-tags: [lark, feishu, pitfalls, identity, bitable, capability-map, channel-sdk]
+author: Frankynwa
+license: MIT
+description: Session-discovered pitfalls, workflows, capability map, and evolution directions for lark-cli. Supplements hub-installed lark-shared with real-world gotchas, official capability reference, and doc-access techniques.
+tags: [hermes-skills, lark, feishu, pitfalls, identity, bitable, capability-map, channel-sdk]
 triggers:
   - lark-cli strict mode
   - bot identity user identity
