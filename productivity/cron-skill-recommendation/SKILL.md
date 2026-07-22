@@ -4,7 +4,7 @@ description: Automated cron job for Hermes Agent skill discovery, research, and 
 version: 1.2.0
 metadata:
   hermes:
-    tags: [cron, feishu, skills, automation, recommendation]
+    tags: [hermes-skills, cron, feishu, skills, automation, recommendation]
     related_skills: [lark-base]
 ---
 
