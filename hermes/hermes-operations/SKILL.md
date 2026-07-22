@@ -1,7 +1,10 @@
 ---
 name: hermes-operations
-description: "Operate, configure, and maintain Hermes Agent — model benchmarking, web UI integration, skill library management (sync, audit, cleanup), and memory optimization. Use when choosing models, connecting web frontends, syncing skills across devices, auditing/cleaning skills, or pruning memory."
-tags: [hermes, operations, benchmarking, web-ui, skills, maintenance]
+description: Operate, configure, and maintain Hermes Agent — model benchmarking, web UI integration, skill library management (sync, audit, cleanup), and memory optimization. Use when choosing models, connecting web frontends, syncing skills across devices, auditing/cleaning skills, or pruning memory.
+version: 1.0.0
+author: Frankynwa
+license: MIT
+tags: [hermes-skills, hermes, operations, benchmarking, web-ui, skills, maintenance]
 related_skills: [hermes-agent, smart-model-switch, hermes-git-upgrade-with-patches]
 ---
 
