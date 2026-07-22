@@ -1,6 +1,10 @@
 ---
 name: lvgl-embedded-linux
-description: Develop LVGL v9 UI apps for embedded Linux (RK3568/Buildroot) with macOS SDL2 simulator. Use when building LVGL UI, porting to ARM boards, setting up cross-compilation, fixing SDL2 rendering issues on macOS, or configuring LVGL drivers (DRM/fbdev/evdev).
+description: Develop LVGL v9 UI apps for embedded Linux (RK3568/Buildroot) with macOS SDL2 simulator.
+version: 1.0.0
+author: Frankynwa
+license: MIT
+tags: [hermes-skills, lvgl, embedded, linux, sdl2, drm, cross-compile, buildroot, rk3568] Use when building LVGL UI, porting to ARM boards, setting up cross-compilation, fixing SDL2 rendering issues on macOS, or configuring LVGL drivers (DRM/fbdev/evdev).
 ---
 
 # LVGL v9 Embedded Linux Development
