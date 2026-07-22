@@ -6,7 +6,7 @@ author: Hermes Agent
 license: MIT
 metadata:
   hermes:
-    tags: [embedded, lvgl, arm, linux, buildroot, rk3568, gui-guider]
+    tags: [hermes-skills, embedded, lvgl, arm, linux, buildroot, rk3568, gui-guider]
     related_skills: []
 ---
 
