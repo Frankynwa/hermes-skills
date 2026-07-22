@@ -6,7 +6,7 @@ author: Hermes Agent
 license: MIT
 metadata:
   hermes:
-    tags: [embedded, hardware, gap-analysis, linux, device-tree, lvgl]
+    tags: [hermes-skills, embedded, hardware, gap-analysis, linux, device-tree, lvgl]
     related_skills: []
 ---
 
