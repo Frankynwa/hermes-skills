@@ -1,9 +1,10 @@
 ---
 name: smart-model-switch
-description: Smart model switching between MiMo (daily), Qwen (complex agent tasks), and DeepSeek (coding/budget) based on task complexity. Uses the agent's own judgment to suggest switching models via /model command.
+description: Smart model switching between MiMo (daily), Qwen (complex agent tasks), and DeepSeek (coding/budget) based on task complexity. Uses agents own judgment to suggest switching models via /model command.
 version: 1.0.0
-author: Hermes Agent
-tags: [model, switching, fallback, cost-optimization, qwen, mimo, deepseek, benchmarking]
+author: Frankynwa
+license: MIT
+tags: [hermes-skills, model, switching, fallback, cost-optimization, qwen, mimo, deepseek, benchmarking]
 ---
 
 # Smart Model Switch
