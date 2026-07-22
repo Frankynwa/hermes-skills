@@ -6,7 +6,7 @@ author: Hermes Agent
 license: MIT
 metadata:
   hermes:
-    tags: [debugging, hermes, session, gateway, context-loss, troubleshooting]
+    tags: [hermes-skills, debugging, hermes, session, gateway, context-loss, troubleshooting]
     related_skills: [systematic-debugging]
 ---
 
