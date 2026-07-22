@@ -1,7 +1,10 @@
 ---
 name: html-to-pdf-macos
-category: productivity
-description: Convert HTML or Markdown documents to PDF on macOS. Use xhtml2pdf as the primary method — weasyprint fails due to missing pango system libraries.
+description: Convert HTML or Markdown documents to PDF on macOS.
+version: 1.0.0
+author: Frankynwa
+license: MIT
+tags: [hermes-skills, pdf, html, macos, xhtml2pdf, productivity] Use xhtml2pdf as the primary method — weasyprint fails due to missing pango system libraries.
 ---
 
 # HTML/Markdown to PDF Conversion on macOS
