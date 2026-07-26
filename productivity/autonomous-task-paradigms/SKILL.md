@@ -1,7 +1,7 @@
 ---
 name: autonomous-task-paradigms
 description: |
-  Three autonomous task paradigms:
+  Four autonomous task paradigms with a decision tree for routing:
   1. Overnight 8h mode — structured bedtime questionnaire → one-shot cronjob with quality gates, checkpointing, and failure recovery
   2. Daytime 20min mode — no-questions trigger word, immediate delegate_task, 20min timebox
   3. Recurring cron templates — daily/weekly/hourly persistent jobs (arXiv digest, morning briefing, watchdog, etc.)
@@ -12,9 +12,43 @@ triggers:
 
 # Autonomous Task Paradigms
 
-Two reusable autonomous execution protocols. The key insight: Hermes is synchronous per-turn — to run unattended, we use cronjob (overnight) or delegate_task (quick burst).
+Three reusable autonomous execution protocols, plus a task routing decision tree. The key insight: Hermes is synchronous per-turn — to run unattended, we use cronjob (overnight) or delegate_task (quick burst).
 
 **Background:** See `references/ecosystem-survey.md` for the full survey of existing autonomous task patterns across Claude Code, Hermes, and skills.sh — and why this skill fills a genuine gap.
+**Overnight implementation reference:** `references/odyssey-implementation.md` — full overnight dialogue + planning system with cron orchestration, Feishu integration, and psych-nlp data injection.
+
+---
+
+## Task Routing Decision Tree
+
+Before choosing a paradigm, route the task through three questions. For a detailed comparison of MoA vs Multi Agents vs 20min, see `references/moa-vs-multi-agents.md`.
+
+```
+任务能拆成清晰的子任务边界和交付物吗？
+├── 不能 → MoA 委员会（local-moa skill）
+│            ⚠️ 前置条件：先跑互补性测试确认 MiMo+DeepSeek 互补性 > 20%
+│            python3 ~/scripts/model_complementarity.py --report
+│            互补性 < 5% 则 MoA 无价值，退回单模型
+│            （需要全局视角、不可拆分的深度推理）
+└── 能 → 子任务之间有强依赖吗？
+    ├── 没有 → Paradigm 2: 20min 模式（并行派发 + 主 agent 整合）
+    │            （独立任务并行跑，主 agent 只在最后汇总）
+    └── 有 → 整合阶段修补工作多吗？
+        ├── 不多 → Paradigm 2: 20min 模式够了
+        │            （子代理质量稳定，主 agent 基本只是拼接）
+        └── 多 → Paradigm 4: Multi-Agent Relay 模式
+                    （代理间实时修正循环，不等到整合阶段才暴露问题）
+```
+
+**判断标准：** 能在 30 秒内画出清晰子任务边界 → 能拆。不能 → MoA。整合修补"多不多"取决于实际体验——如果主 agent 整合时经常需要大量修补而非简单拼接，就值得上 Multi Agents。
+
+**典型分配：**
+- LVGL 新页面开发 → 能拆 + 有依赖 + 修补通常不多 → 20min
+- LVGL 运行时 bug 调试 → 不能拆 → MoA
+- AlphaSeeker 新因子开发 → 能拆 + 无强依赖 → 20min
+- AlphaSeeker 策略争议分析 → 不能拆 → MoA
+- 论文解读批判 → 不能拆 → MoA
+- 飞书消息/审批 → 单模型就够了
 
 ---
 
@@ -178,6 +212,11 @@ After creating the cronjob, tell the user:
 - NEVER set schedule more than 1 hour in the future — the user should be about to sleep
 - Quality gates are mandatory — the cron agent MUST run the self-audit before delivering
 - Parallel subagents must not touch the same files (race condition risk)
+- **CRITICAL: "once at" cron jobs may silently fail to fire** — when schedule is set to the current time or a few minutes from now, the scheduler may never trigger the job. Symptom: `last_run_at: null, state: scheduled` long after the scheduled time. **After creating the cronjob, IMMEDIATELY verify with `cronjob(action='list')` that `last_status` is non-null.** If `last_run_at` is still null 5 minutes after the scheduled time, the job silently failed. **Recovery: prefer running the overnight tasks in the CURRENT session** (the agent stays active until the user returns), OR use `cronjob(action='run')` to force-trigger it, OR create with schedule 15+ minutes in the future to give the scheduler time to register. Never let the user go to sleep without confirming the job is actually running.
+
+- **Cron ≠ interactive dialogue** — 用 cron 做追问/对话是错误设计。用户可能在秒级回复，但 cron 最快粒度为分钟级。交互式对话必须留在当前 session 中处理，cron 只负责"定时触发第一个问题"这一步。
+
+- **Gate: BUILD only after user APPROVES design** — 不要在用户审阅方案前擅自进入构建阶段。先呈现设计方案 → 等用户审批/修改 → 再动手实现。跳过这个 gate 就是抢用户的决策权，触发用户"主角是我，为什么方案都没给我审批"的合理愤怒。
 
 ### Failure Modes & Recovery
 
@@ -433,3 +472,110 @@ cronjob(
 - Don't create recurring crons without explicit user request — they persist until removed
 - Hourly crons with heavy computation will burn tokens fast — keep prompts minimal
 - If a recurring cron starts failing silently, the user won't notice until they check. Add a health check pattern: "If you cannot complete this task, explicitly say FAILED: <reason>"
+
+---
+
+## Paradigm 4: Multi-Agent Relay Mode (CrewAI)
+
+### Why this mode exists
+
+20min mode uses delegate_task: the main agent dispatches subagents, collects results, integrates. Subagents cannot communicate with each other — the main agent is the relay. This works when subagent outputs are independent and integration is simple. But when subagent B depends on subagent A's output and A's quality is inconsistent, the main agent ends up doing heavy repair work in the integration phase. The user sees the final result, but the machine did more turns than necessary, and quality suffered from the Chinese whispers of "A → main agent → B" relay.
+
+Multi-Agent Relay mode uses CrewAI to let agents communicate directly. A code reviewer agent can flag an issue to the original author agent, the author fixes it, the reviewer re-checks — all without the main agent stepping in. This is automatic correction loops, not manual re-dispatch.
+
+### When to use
+
+Only when the task satisfies ALL of:
+1. Clear subtask boundaries (can decompose)
+2. Strong dependencies between subtasks (B needs A's output)
+3. Integration/repair work is consistently heavy in 20min mode
+
+If integration in 20min mode is just light stitching, this mode is overkill — the framework overhead outweighs the benefit.
+
+### Key difference from 20min mode
+
+| | 20min mode | Multi-Agent Relay |
+|---|---|---|
+| Agent communication | Through main agent only | Direct agent-to-agent |
+| Error correction | Main agent spots errors at integration → re-dispatches | Reviewer agent flags → author agent fixes in real-time |
+| Human attention cost | Low (hands-off during execution) | Lower (fewer integration failures mean fewer re-runs) |
+| Setup cost | Zero (uses delegate_task) | Pip install crewai + define agent roles |
+| Token overhead | Baseline | Slightly higher (agent-to-agent messages), but offset by fewer re-runs |
+
+### Setup
+
+CrewAI is the recommended framework for Hermes integration. Both CrewAI and AutoGen support custom OpenAI-compatible APIs (MiMo + DeepSeek), but CrewAI's declarative API (Agent role + Task + kickoff) is a better fit for cronjob/script-based execution than AutoGen's manual conversation loop.
+
+```python
+from crewai import Agent, Task, Crew, LLM
+
+mimo = LLM(
+    model='openai/mimo-v2.5-pro',
+    base_url='https://api.xiaomimimo.com/v1',
+    api_key=os.environ['MIMO_API_KEY']
+)
+deepseek = LLM(
+    model='openai/deepseek-chat',
+    base_url='https://api.deepseek.com/v1',
+    api_key=os.environ['DEEPSEEK_API_KEY']
+)
+
+# Define agents with roles
+frontend_agent = Agent(
+    role='LVGL UI Developer',
+    goal='Write LVGL v9 UI code',
+    backstory='Embedded GUI specialist',
+    llm=mimo,
+    verbose=True
+)
+reviewer_agent = Agent(
+    role='Code Reviewer',
+    goal='Review for memory leaks, NULL checks, API compatibility',
+    backstory='Embedded C quality assurance',
+    llm=deepseek,
+    verbose=True
+)
+
+# Tasks with dependencies auto-resolved by CrewAI
+task1 = Task(description='Write LVGL settings page with roller component', agent=frontend_agent)
+task2 = Task(description='Review the code for issues', agent=reviewer_agent, context=[task1])
+
+crew = Crew(agents=[frontend_agent, reviewer_agent], tasks=[task1, task2], process='sequential')
+result = crew.kickoff()
+```
+
+**Agent role assignment rule of thumb:**
+- MiMo → UI/frontend/creative tasks (training data bias toward IoT/consumer devices)
+- DeepSeek → backend logic, code review, aggregation (stronger at structured reasoning)
+
+### CC + Codex Pipeline (alternative to CrewAI)
+
+Claude Code and Codex CLI can be pipelined for agent relay without external frameworks:
+
+```
+1. Codex (DeepSeek) writes code
+2. Hermes (MiMo) reviews + suggests improvements
+3. Codex corrects
+4. Hermes confirms
+```
+
+**Critical pitfall:** CC and Codex both use DeepSeek API under the hood. If you route
+both through DeepSeek, you lose cross-model diversity (same training data). For the
+pipeline to add value beyond 20min mode, at least one agent must use MiMo for a
+different knowledge perspective. Without cross-model diversity, a simple 20min
+delegate_task run achieves the same quality with less complexity.
+
+When to use CC + Codex pipeline vs CrewAI vs 20min mode:
+- 20min mode: default, covers 80% of multi-step tasks
+- CC + Codex: when you need CC's file-tree awareness + Codex's structured output,
+  AND you route them through different model families
+- CrewAI: when you need agent-to-agent correction loops AND the task has
+  persistent quality issues in integration phase
+
+### Pitfalls
+- CrewAI installs heavy (chromadb, openai, lancedb). Use only if the integration repair savings justify it
+- Pydantic version conflicts with Hermes (CrewAI 2.11 vs Hermes 2.13). Functional but may cause warnings
+- CrewAI's LiteLLM layer adds one extra hop of latency per API call vs direct HTTP
+- Do NOT use this for tasks with no subagent dependencies — 20min mode is faster and cheaper
+- Never assign multiple agents to touch the same file simultaneously (race condition)
+- CC + Codex pipeline loses cross-model diversity if both routed through DeepSeek — route at least one through MiMo
