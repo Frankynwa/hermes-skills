@@ -277,6 +277,7 @@ Code: https://github.com/dtbtc/mcts-llm-alpha
 - `references/a-share-factor-ic-findings.md` — Empirical IC results and corrected scoring functions
 - `references/akshare-macro-sync-patterns.md` — Verified akshare API calls for macro data
 - `references/risk-models-implementation.md` — Altman Z-Score, O-Score, fraud detection
+- `references/backtest-lessons-learned.md` — V3.4 empirical findings: Enhanced < Baseline paradox, A-share factor inversions, data quality limits, diagnostic methodology
 - `references/mysql_schema.sql` — AlphaSeeker database schema
 - `scripts/fetch_financials.py` — Fetch financial data from datacenter API
 - `scripts/full_backtest.py` — Full quintile backtest script
@@ -425,4 +426,7 @@ PE/PB historical percentile + PEG + analyst consensus vs actual EPS.
 5. **Turnover kills alpha** — a factor with IC=0.05 and 80% quarterly turnover may lose all alpha to costs
 6. **A-share value factor works in bear, not bull** — pure PE/PB model showed IC=0.12 in bear vs 0 in bull (5-year backtest). BUT more critically: in A-shares, PE/PB are POSITIVELY correlated with returns (high PE = growth premium). Traditional "low PE = cheap" scoring REVERSES the signal and produces negative IC. Always run raw IC diagnostic before coding scoring functions.
 7. **Small-cap bias in A-share** — without market-cap filter, scoring engines pick up micro-caps with extreme financials that are unreliable
-8. **A-share scoring reversal** — Asset turnover, dividend yield are NEGATIVELY correlated with returns in A-shares (opposite intuition). Growth (net_profit_growth) is the strongest factor (IC≈0.12). See `quant-factor-backtest` skill `references/a-share-factor-ic-findings.md` for empirical data.
+8. **A-share scoring reversal** — Asset turnover, dividend yield are NEGATIVELY correlated with returns in A-shares (opposite intuition). Growth (net_profit_growth) is the strongest factor (IC≈0.12). See `references/a-share-factor-ic-findings.md` for empirical data.
+9. **Enhanced frameworks can reduce performance** — V3.4 backtest showed Enhanced (5-layer: macro + industry + risk + expectation + base) underperformed simple Baseline (6-dim factor score) by 25 percentage points (61.8% vs 86.6%). Every added layer must prove incremental IC >0 before inclusion. See `references/backtest-lessons-learned.md` for full analysis.
+10. **Short backtest periods mislead** — 5 quarters is not enough. Bull-market alpha is often just beta. Require at least one full cycle (3-5 years for A-shares).
+11. **Missing risk-adjusted metrics = incomplete report** — Sharpe ratio, Information Ratio, rolling metrics are mandatory. Cumulative return alone is deceptive.

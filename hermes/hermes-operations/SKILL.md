@@ -495,6 +495,7 @@ grep 'fallback' ~/.hermes/config.yaml -A3
 | `HTTP 429` | Rate limited, not a balance issue — wait or reduce concurrency |
 | Job runs but produces no output | Script error, not API error — check the script separately |
 | `last_status: "error"` but no Error in output file | Gateway killed the job (timeout) before it wrote output |
+| `last_run_at: null, state: scheduled` long after scheduled time | "once" job silently failed to fire — scheduler never triggered it. Fix: use `cronjob(action='run')` to force-trigger, or run the task directly instead of delegating to cron. Prefer in-session execution for immediate overnight tasks. |
 
 ### Cron Output File Locations
 - Job outputs: `~/.hermes/cron/output/<job-id>/<timestamp>.md`
@@ -651,12 +652,14 @@ The system auto-reconnects within 15-60s. Proxy errors dominate — if not using
 11. **Open WebUI restart needs 60s wait** — the all-MiniLM-L6-v2 embedding model takes 30-60 seconds to load. Health checks immediately after restart will fail with connection refused.
 12. **Open WebUI config is in SQLite, not .env** — the `config` table has a JSON `data` column. Don't look for `.env` files; query `webui.db` directly.
 13. **macOS "Resource deadlock avoided" on files with `@` xattr**
-14. **GFW blocks git operations** — `hermes update` (which runs `git fetch` + `git checkout`) fails on mainland China networks because GitHub is blocked. Before spending time on proxy workarounds, check: (a) current version (`hermes --version`), (b) latest tag on GitHub (`git ls-remote --tags` via proxy if available), (c) version gap. If the gap is small (< 10 commits), skip the upgrade — Hermes doesn't have critical patches that often. If the upgrade is needed, use the `hermes-git-upgrade-with-patches` skill which has proxy-aware workflows. — `cat`, `dd`, `xxd`, and even Python `open()` all fail with `OSError: Resource deadlock avoided` on files that have extended attributes (shown by `ls -la` as `@` suffix). This hits Desktop/Documents files on macOS. **Workaround**: `perl -pe '' /path/to/file` bypasses the restriction and reads the content normally. Use this when any file read tool fails with this specific error.
+14. **Overnight/research task + monitoring cron = must auto-cleanup** — When setting up a long-running research task with a companion monitoring cron job, the monitoring cron MUST be removed or paused as soon as the task completes. A monitoring cron that keeps running after the task finishes will spam the user with useless "task is done, nothing new" reports every cycle. Pattern: (a) when the task finishes, delete the monitoring cron immediately; (b) if the cron prompt can detect completion, make it return `[SILENT]` AND set the job to disable itself after detecting terminal state; (c) never trust "repeat N" to self-limit — the cron keeps firing until explicitly removed. Also: if a task is branded "overnight research," the rounds must involve real computation (hyperparameter sweeps, long backtests, multi-seed validation), not just LLM generation that finishes in 48 minutes. The name sets expectations — a 48-minute "overnight" task erodes trust.
+15. **GFW blocks git operations** — `hermes update` (which runs `git fetch` + `git checkout`) fails on mainland China networks because GitHub is blocked. Before spending time on proxy workarounds, check: (a) current version (`hermes --version`), (b) latest tag on GitHub (`git ls-remote --tags` via proxy if available), (c) version gap. If the gap is small (< 10 commits), skip the upgrade — Hermes doesn't have critical patches that often. If the upgrade is needed, use the `hermes-git-upgrade-with-patches` skill which has proxy-aware workflows. — `cat`, `dd`, `xxd`, and even Python `open()` all fail with `OSError: Resource deadlock avoided` on files that have extended attributes (shown by `ls -la` as `@` suffix). This hits Desktop/Documents files on macOS. **Workaround**: `perl -pe '' /path/to/file` bypasses the restriction and reads the content normally. Use this when any file read tool fails with this specific error.
 
 ## Reference Files
 
 - `references/benchmark-2026-05-24.md` — Round 1 benchmark results
 - `references/capability-tasks-reference.md` — Round 2 task design and scoring rubric
+- `references/provider-billing-investigation.md` — Extracting API call evidence from local DBs for billing disputes
 - `references/xiaomi-mimo-api.md` — MiMo provider endpoints and gotchas
 - `references/caching-models.md` — Cache hit rate analysis
 - `references/api-server-source-analysis.md` — API Server code-level findings

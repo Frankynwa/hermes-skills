@@ -117,6 +117,30 @@ npx skills add <owner/repo@skill> -g -y
 
 The `-g` flag installs globally (user-level) and `-y` skips confirmation prompts.
 
+## Cross-Platform Agent Skill Search (MANDATORY)
+
+**Don't just search Hermes.** When the user asks "find a skill for X", search ALL agent platforms:
+
+| Platform | Search Method |
+|----------|--------------|
+| **Hermes** | `skills_list` + `search_files` in `~/.hermes/skills/` |
+| **skills.sh** | `npx skills find [query]` |
+| **Claude MCP** | `mcp_github_search_repositories` with `mcp server` + keywords |
+| **LangChain** | Search python.langchain.com/docs/integrations/ |
+| **CrewAI** | Search docs.crewai.com/tools |
+| **Dify** | Search plugins.dify.ai |
+| **Coze** | Search coze.cn/plugins |
+| **OpenAI GPTs** | Search chat.openai.com/gpts |
+
+### Workflow
+1. **Hermes first** → `skills_list` + `search_files`
+2. **Cross-platform** → Claude MCP, LangChain, CrewAI, Dify, Coze, GPTs
+3. **Reverse verify** → Found something? Check if Hermes already has equivalent
+4. **Learn & create** → No Hermes equivalent? Reference the external design to create a new skill
+
+### Use Case
+When domain-specific skills are rare (e.g. history, digital humanities, niche fields), cross-platform search often finds partial solutions or design patterns to adapt. Don't conclude "nothing exists" after searching only Hermes.
+
 ## Common Skill Categories
 
 When searching, consider these common categories:

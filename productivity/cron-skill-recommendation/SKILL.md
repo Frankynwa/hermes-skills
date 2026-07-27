@@ -1,7 +1,7 @@
 ---
 name: cron-skill-recommendation
 description: Automated cron job for Hermes Agent skill discovery, research, and reporting to Feishu multi-dimensional tables. Use when setting up or running scheduled skill curation/recommendation workflows.
-version: 1.2.0
+version: 1.3.0
 metadata:
   hermes:
     tags: [hermes-skills, cron, feishu, skills, automation, recommendation]
@@ -24,14 +24,133 @@ Use this skill when:
 
 ### 1. Search for Latest Skills
 
-**⚠️ API STATUS (2026-07-20):** The skills.sh REST API `/api/search` is **DOWN** — both `skills.sh/api/search` and `www.skills.sh/api/search` return 404 (Next.js error page). This is a site-wide regression from the confirmed-working state on 2026-07-19. The `/api/v1/skills` path also returns 404. **DO NOT spend more than 1-2 curl attempts testing the API — it's fully down.** Use Method B (GitHub API) as the PRIMARY fallback, or Method A (browser DOM scraping) / Method C (RSC data parsing) if the Next.js pages still load.
+**⚠️ API STATUS (2026-07-26):** The skills.sh REST search API is **BACK UP** as of 2026-07-25:
+- `skills.sh/api/search?q=TERM&limit=N` → ✅ WORKING (no `www.` prefix — with www → 404)
+- Response format: `{"query":"...","searchType":"fuzzy","skills":[{"id":"owner/repo/skill","skillId":"skill","name":"skill","installs":123,"source":"owner/repo"}]}` — parse with `data.get("skills", [])`
+- `www.skills.sh/api/search?q=TERM` → 404 (www prefix is WRONG — use without www)
+- `skills.sh/api/v1/skills` → 401 (requires Vercel OIDC, still unusable)
+- `skills.sh/api/skills/{id}` → 404 (individual skill detail endpoints DO NOT EXIST — use search results only)
+- **Sitemap XML parsing is CONFIRMED WORKING (2026-07-24)** — two files at `sitemap-skills-{1,2}.xml`, HTTP 200, 20,000 skills total. Use as fallback if API goes down again.
+- **The correct endpoint is `https://skills.sh/api/search` (NO www prefix).** Response format: array of `{"id":"owner/repo/skill","skillId":"skill","name":"skill","installs":123,"source":"owner/repo"}`. Only 5 fields returned — no category or description.
+- **GitHub Search API is UNRELIABLE** for this workflow (demoted 2026-07-24) — 8/10 queries returned 0 results, max-quality repos had ≤14 stars. Use only as last-resort fallback.
 
-**When API is UP, use REST API search:**
+**Primary (2026-07-24): Sitemap XML parsing — 20,000 skills, zero rate limits:**
+
+Skills.sh publishes two sitemap XML files that list ALL ~20,000 skills on the platform with full URLs (owner/repo/skill-name). This is the fastest discovery method — two HTTP fetches, no pagination, no rate limits:
+
+```python
+import urllib.request, xml.etree.ElementTree as ET
+
+all_skills = []
+for i in [1, 2]:
+    url = f"https://www.skills.sh/sitemap-skills-{i}.xml"
+    req = urllib.request.Request(url, headers={'User-Agent': 'Hermes-Agent/1.0'})
+    with urllib.request.urlopen(req, timeout=15) as resp:
+        tree = ET.parse(resp)
+        root = tree.getroot()
+        ns = {'ns': 'http://www.sitemaps.org/schemas/sitemap/0.9'}
+        for url_elem in root.findall('.//ns:url/ns:loc', ns):
+            loc = url_elem.text.strip()
+            parts = loc.replace('https://www.skills.sh/', '').split('/')
+            if len(parts) >= 3:
+                all_skills.append({
+                    'url': loc,
+                    'owner': parts[0],
+                    'repo': parts[1],
+                    'name': parts[2],
+                })
+```
+
+This yields ~20,000 skills. Then filter by quality authors + keyword matching:
+
+```python
+# Well-known quality authors (top-tier official orgs + respected individuals)
+quality_authors = {
+    'anthropics', 'vercel-labs', 'mattpocock', 'stripe', 'supabase',
+    'microsoft', 'openai', 'remotion-dev', 'larksuite', 'stablyai',
+    'agentspace-so', 'getpaperclipai', 'cofoundy', 'langchain-ai',
+    'cline', 'aider', 'continuedev', 'tldraw', 'excalidraw', 'nvidia',
+}
+
+# Category inference from name + owner + repo keywords
+def infer_category(name, owner, repo):
+    combined = f"{name.lower()} {owner.lower()} {repo.lower()}"
+    if any(k in combined for k in ['frontend', 'react', 'vue', 'css', 'ui', 'ux', 'design', 'tailwind']):
+        return '创意设计'
+    if any(k in combined for k in ['devops', 'deploy', 'docker', 'kubernetes', 'aws', 'azure', 'infra']):
+        return 'DevOps'
+    if any(k in combined for k in ['test', 'jest', 'playwright', 'cypress', 'qa']):
+        return '开发工具'
+    if any(k in combined for k in ['data', 'analytics', 'sql', 'database', 'pandas', 'spark']):
+        return '数据科学'
+    if any(k in combined for k in ['research', 'paper', 'academic', 'literature']):
+        return '研究'
+    if any(k in combined for k in ['security', 'pentest', 'auth', 'vulnerability']):
+        return '开发工具'
+    if any(k in combined for k in ['github', 'git', 'pr', 'code-review']):
+        return '开发工具'
+    if any(k in combined for k in ['mcp', 'server', 'api', 'integration']):
+        return '开发工具'
+    if any(k in combined for k in ['memory', 'knowledge', 'graph', 'rag', 'vector']):
+        return 'AI/ML'
+    if any(k in combined for k in ['ai', 'ml', 'model', 'llm', 'gpt', 'claude', 'agent', 'skill', 'cursor', 'codex']):
+        return 'AI/ML'
+    if any(k in combined for k in ['automation', 'workflow', 'pipeline', 'cron']):
+        return '生产力'
+    return '其他'
+
+# Filter: quality authors first, then keyword-matched non-quality-authors
+priority_candidates = []
+for s in all_skills:
+    if is_existing(s['name']):
+        continue
+    if s['owner'] in quality_authors:
+        priority_candidates.append({**s, 'priority': 1, 'category': infer_category(s['name'], s['owner'], s['repo'])})
+    elif any(kw in s['name'].lower() for kw in keyword_set):
+        priority_candidates.append({**s, 'priority': 2, 'category': infer_category(s['name'], s['owner'], s['repo'])})
+```
+
+**For descriptions**, fetch individual skill pages (~0.25s each, limit to 40 candidates):
+
+```python
+for c in priority_candidates[:40]:
+    url = f"https://www.skills.sh/{c['owner']}/{c['repo']}/{c['name']}"
+    req = urllib.request.Request(url, headers={'User-Agent': 'Hermes-Agent/1.0'})
+    with urllib.request.urlopen(req, timeout=10) as resp:
+        html = resp.read().decode('utf-8', errors='replace')
+        desc_match = re.search(r'<meta\s+name="description"\s+content="([^"]+)"', html, re.IGNORECASE)
+        c['description'] = desc_match.group(1) if desc_match else ""
+    time.sleep(0.25)
+```
+
+**Expected yield (2026-07-24):** ~900 quality-author skills after filtering 20K, ~40 descriptions fetched, 2-5 genuinely new after dedup against ~290 existing records. Table is highly saturated — expect fewer new finds each run.
+
+**Fallback: GitHub Search API** (demoted 2026-07-24 — unreliable for skill discovery, use only when sitemap is unavailable):
+
+The GitHub Search API returns repos with SKILL.md files but has severe limitations for this workflow:
+- Most queries return 0 results (8/10 queries failed on 2026-07-24)
+- Best-performing query (`claude-code+skill+in:name`) returned only 20 repos, mostly 0-1 stars
+- Rate limit: ~10 req/min unauthenticated, hits `403` quickly
+- Result quality is far below sitemap — repos have low stars, sparse descriptions, and are often unrelated to agent skills
+
+If you must use it, the only query pattern that returned anything useful:
+
+```python
+queries = [
+    "claude-code+skill+in:name",
+    "codex+skill+in:name",
+    "cursor+skill+in:name",
+]
+# Expect 20-30 total results, many irrelevant
+```
+
+**When API is UP (confirmed working 2026-07-25):**
 
 ```python
 import urllib.request, json, time
 
-base_url = "https://www.skills.sh/api/search"
+# CORRECT endpoint: NO www prefix. With www → 404.
+base_url = "https://skills.sh/api/search"
 search_terms = ["hermes", "claude", "frontend", "design", "devops", "github", 
                 "mcp", "testing", "research", "react", "data", "memory",
                 "automation", "ai-agent", "security"]
@@ -44,30 +163,21 @@ for term in search_terms:
     req = urllib.request.Request(url, headers={"User-Agent": "Hermes-Agent/1.0"})
     resp = urllib.request.urlopen(req, timeout=15)
     data = json.loads(resp.read().decode())
-    for item in data.get('skills', []):
-        item_id = item.get('id')
+    # Response is {"query":"...","searchType":"fuzzy","skills":[...]} — NOT a flat array
+    items = data.get("skills", []) if isinstance(data, dict) else (data if isinstance(data, list) else [])
+    for item in items:
+        item_id = item.get("id")
         if item_id and item_id not in seen_ids:
             seen_ids.add(item_id)
             all_results[item_id] = item
     time.sleep(0.3)  # Be polite to the API
 ```
 
-This yields 250-300 unique skills across 15 terms (deduplicated by `id`). Sort by `installs` descending. Response format: `{"query":"hermes","searchType":"fuzzy","skills":[{"id":"source/skill","skillId":"skill","name":"skill","installs":123,"source":"owner/repo"}]}`. Note: only 5 fields returned — no category/description. See `references/api-search-endpoint.md` for full details and description-fetching code.
+This yields ~293 unique skills across 15 terms (deduplicated by `id`). Sort by `installs` descending. Response is a JSON object `{"skills": [...]}` where each item has 5 fields: `id`, `skillId`, `name`, `installs`, `source`. No category or description in search results — use name/source for category inference. Individual skill detail endpoints (`/api/skills/{id}`) return 404 — search is the only API available.
 
-**When API is fully DOWN (500 errors — entire site outage):** Use `delegate_task` with 2 parallel subagents for GitHub-based discovery. This is the fastest path when skills.sh is completely unavailable:
+**When sitemap files AND API are both unavailable (entire site outage):** Use browser-based DOM scraping of the skills.sh leaderboard as described in `references/browser-scraping-fallback.md`. If that also fails, GitHub Search is the absolute last resort — use `delegate_task` with 2 parallel subagents for parallel discovery, but expect low yield (0 results on most queries).
 
-```python
-# In the cron prompt, after Step 0 dedup:
-# Use delegate_task with tasks=[...] for parallel search:
-# Task A: Search GitHub repos with "SKILL.md" created after recent cutoff date, sorted by stars
-# Task B: Search GitHub for "skills.sh agent skill SKILL.md" repos with 10+ stars
-# Both subagents should cross-reference against the existing_names list
-# Each returns structured JSON with: name, author, description, stars/installs, categories
-```
-
-This typically yields 30+ new high-quality candidates in parallel. Merge results, deduplicate by name, pick top 10 with category diversity. The subagent context should include the full existing_names list so filtering happens server-side.
-
-**Fallback: RSC data parsing** (if `/api/search` returns 404 but site pages still load):
+**Fallback: RSC data parsing** (if sitemap files AND API are both unavailable but site pages still load):
 
 **Method C: RSC data parsing via curl (RECOMMENDED — fastest, no browser needed):**
 
@@ -145,53 +255,6 @@ Also hit the Hot (`/hot`) and Trending (`/trending`) pages for additional candid
    })()
    ```
 The full extraction pattern (including install count parsing from DOM text) is documented in `references/browser-scraping-fallback.md`.
-
-**Method B: GitHub API search (PRIMARY FALLBACK when skills.sh API is down — CONFIRMED WORKING 2026-07-20):**
-
-Use `execute_code` with `urllib.request` to query GitHub's search endpoint. The GitHub Search API is stable and returns rich structured data (name, description, stars, author, created_at, updated_at, url). **This should be your go-to when skills.sh is unavailable** — it's faster than browser scraping, yields more structured data, and avoids rate limits when properly spaced.
-
-**Proven query patterns (2026-07-20):**
-
-```python
-import urllib.request, json, time
-
-headers = {
-    "User-Agent": "HermesAgent/1.0",
-    "Accept": "application/vnd.github+json"
-}
-
-# Use `created:` qualifier to find fresh repos
-queries = [
-    "hermes+agent+skill+created:>2026-07-10",
-    "claude+code+skill+created:>2026-07-10",
-    "agent+skill+created:>2026-07-15",
-]
-
-all_repos = {}
-for q in queries:
-    url = f"https://api.github.com/search/repositories?q={q}&sort=stars&order=desc&per_page=15"
-    req = urllib.request.Request(url, headers=headers)
-    with urllib.request.urlopen(req, timeout=15) as resp:
-        data = json.loads(resp.read())
-        for item in data.get("items", []):
-            rid = item.get("id")
-            if rid and rid not in all_repos:
-                all_repos[rid] = item
-    time.sleep(1)  # Avoid secondary rate limits
-
-# Extract candidate fields
-# item["full_name"] → "owner/repo"
-# item["stargazers_count"] → star count (use as proxy for installs)
-# item["description"] → skill description
-# item["created_at"], item["updated_at"] → dates
-# item["html_url"] → GitHub URL (use as Skill链接)
-```
-
-**Expected yield:** 3 queries × 15 results each → ~42 unique repos after dedup. ~22 will be genuinely new (not in existing table). From these, select 10 with category diversity. Rate limit: ~10 req/min unauthenticated, ~30 req/min with token. With 1s spacing, 3 queries is safe.
-
-**For older skills (not just brand-new):** remove `created:` qualifier and use broader queries like `"SKILL.md+agent+skill+stars:>10"` or `"skills.sh+agent+skill+stars:>10"`.
-
-**⚠️ GitHub API rate limit:** Unauthenticated requests are limited to ~10/minute. The `403 rate limit exceeded` error means you must slow down or use authenticated requests. RSC parsing is generally faster and avoids this issue entirely.
 ### 2. Research Each Skill
 
 Since browser scraping already provides install counts and skill URLs, the research step focuses on:
@@ -377,13 +440,15 @@ This pattern bypasses any potential `@file` issues entirely. **Verified 2026-07-
 
 0. **Deduplication step was chronically skipped by autonomous agents**: When running as a cron job (no human oversight), the agent jumps straight from research to Feishu write without checking existing records. This caused 85 duplicate records (42.5%) by 2026-06-24. **Fix (applied 2026-06-24):** The cron prompt now puts dedup as "Step 0" — the very first action, before any search. The agent must read `+record-list` output, parse existing Skill名称 into a set, and filter all candidates against it. The final validation rule: "all 10 written skills must NOT be in existing_names. If fewer than 10 new skills exist, write as many as you have — never pad with duplicates."
 
-0.5. **skills.sh REST API `/api/search` is the primary data source (confirmed working 2026-07-19)**: The `/api/search?q=<term>&limit=N` endpoint on `www.skills.sh` returns JSON results with `id`, `name`, `installs`, `source`, and `skillId` fields. With `limit=20` (per-term, can use 25 safely), 15 search terms yield ~350 unique candidates. The API is unstable day-to-day and `www.` prefix has been required since 2026-07-19. Always test one query first. If 404, fall back to RSC parsing (see `references/rsc-data-parsing.md`) or browser DOM scraping (see `references/browser-scraping-fallback.md`).
+0.5. **skills.sh REST API status (updated 2026-07-26)**: The search API is **BACK UP** as of 2026-07-25. The working endpoint is `https://skills.sh/api/search?q=TERM&limit=N` (NO `www.` prefix — with www it returns 404). Response is `{"query":"...","searchType":"fuzzy","skills":[...]}` — parse with `data.get("skills", [])`. Individual detail endpoints (`/api/skills/{id}`) return 404 — the search endpoint is the ONLY way to get skill data via API. Sitemap XML parsing remains as fallback if API goes down again.
 
 0.5b. **Chinese "Name - Description" suffix in existing table records**: The Feishu table often contains entries like "SkillClaw - 技能自动进化" or "oh-my-hermes - 多智能体编排". Normalize these by splitting on " - " and keeping only the first part. Without this, perfectly matching skills will be treated as new and create duplicates. Also strip Chinese parenthetical notes like "（多智能体辩论系统）" using regex `re.sub(r'[（(][^)）]*[)）]', '', name)`.
 
-0.5c. **skills.sh API returns minimal fields — no category or description**: The `/api/search` endpoint only returns `id`, `skillId`, `name`, `installs`, and `source`. To get descriptions, fetch individual skill pages with `urllib.request` and extract from HTML meta tags: `re.search(r'<meta[^>]*name="description"[^>]*content="([^"]*)"', html, re.IGNORECASE)` or `og:description`. Category must be assigned manually. Allow ~0.3s per page fetch. See `references/api-search-endpoint.md` for full details.
+0.5c. **GitHub Search API returns rich data — no separate fetching needed** (updated 2026-07-23): Unlike the old skills.sh API which returned only 5 fields, GitHub Search returns `name`, `description`, `stargazers_count` (proxy for installs), `topics` (for category inference), `html_url`, `full_name` (author), `language`, and `updated_at`. Category is inferred from `topics` and `language`. No separate page-fetching step required — everything needed for the Feishu record is in the search results.
 
-0.5d. **Correct API endpoint path (verified 2026-07-19)**: The working endpoint is `https://www.skills.sh/api/search?q=TERM&limit=N`. The `www.` subdomain prefix is REQUIRED — `skills.sh/api/search` (without `www.`) returns 404. Other paths that 404: `/api/skills/search`, `/api/v1/search`, `/api/v1/skills`. Always use `www.skills.sh/api/search`.
+0.5d. **skills.sh API endpoint status (updated 2026-07-26)**: Search API is **BACK UP**: `https://skills.sh/api/search?q=TERM&limit=N` → ✅ WORKING (no www prefix). `/api/v1/skills` → 401 (Vercel OIDC, unusable). `/api/skills/{id}` → 404 (detail endpoints don't exist). **Response format is `{"query":"...","searchType":"fuzzy","skills":[...]}` — NOT a flat array.** Always parse with `data = json.loads(body); skills = data.get("skills", [])`. The `www.` prefix causes 404 — always use `skills.sh` without www. Sitemap XML parsing remains available as fallback at `sitemap-skills-{1,2}.xml`.
+
+0.5e. **Table saturation — expect fewer new finds over time (2026-07-26)**: As the Feishu table grows (~270+ records as of 2026-07-26, has_more=true at limit=200), most quality-author skills will already be recorded. On 2026-07-26, of 293 API results across 15 search terms, only 255 survived dedup and 10 were selected. The table is highly saturated. **Don't force 10 recommendations** — write as many as genuinely new, even if it's only 2-4. Never pad with duplicates. If 0 new skills are found, respond with `[SILENT]`. Consider reducing cron frequency (e.g., from daily to weekly) once the table exceeds ~300 records. **Always paginate** — `+record-list --limit 200` may not return all records; check for `has_more` and use `--offset 200` for the next page.
 
 0e. **Feishu notification with Chinese content via file pipe**: As of 2026-07-02, `cat notify_msg.txt | lark-cli im +messages-send --user-id ... --as bot --text -` works reliably with Chinese content. Write the file via `write_file` (not terminal heredoc) to avoid `tirith:confusable_text` scanner.
 
@@ -417,7 +482,7 @@ This pattern bypasses any potential `@file` issues entirely. **Verified 2026-07-
    - **Pipe to interpreter is BLOCKED**: `lark-cli ... | python3 -c "..."` triggers `tirith:pipe_to_interpreter` with [HIGH] severity. Use `execute_code` or write output to file first, then read. This is a NEW scanner rule as of 2026-07-20.
    - `--markdown` with Chinese characters — blocked (unchanged). Use `--text` mode instead.
 
-9. **GitHub API rate limiting (confirmed 2026-06-26)**: Unauthenticated GitHub Search API requests hit `403 rate limit exceeded` after ~6-8 queries within 60 seconds. Even with `time.sleep(1.5)` between calls, large query batches exhaust the limit. **Prefer RSC data parsing for initial candidate discovery** — it's faster (250+ skills across pages) and avoids rate limits entirely. Use GitHub API only for supplementary detail on specific repos (1-2 queries with 2s spacing).
+9. **GitHub API rate limiting (demoted 2026-07-24)**: GitHub Search is no longer the primary discovery method — sitemap XML parsing is. GitHub Search is unreliable for this workflow (8/10 queries returned 0 results on 2026-07-24). Only use as last-resort fallback when sitemap files are unavailable. If you must use it: unauthenticated ~10 req/min, `403` after ~12 queries.
 
 ## Step 6: Install Filtered Skills (Follow-up Workflow)
 
@@ -425,6 +490,7 @@ After writing recommendations to Feishu, the user may ask to install the best on
 
 ## File Layout
 
+- `references/sitemap-discovery.md` — Sitemap XML parsing for complete skill discovery (20K skills, 2 HTTP requests). **CONFIRMED WORKING 2026-07-24.**
 - `references/daily-skill-table.md` — Complete table field map, CellValue formats, and classification options
 - `references/feishu-im-unicode-pitfall.md` — Unicode security scan blocking Chinese IM messages — exact error, root cause, and workarounds
 - `references/cron-model-resolution-fix.md` — Fix for cron jobs failing with 402/400 errors when config.yaml model key is non-standard

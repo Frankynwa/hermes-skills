@@ -133,3 +133,25 @@ When using `read_file` inside `execute_code`, the returned `content` field
 contains line number prefixes like `  123|content`. These must be stripped
 before writing back. Use standalone Python scripts via `terminal` for file
 transformations instead.
+
+### Pitfall 5: PPTX context extraction may silently drop slides
+The upper-level text extraction pipeline can truncate or return empty bodies
+for later slides (e.g., slides 57-62 of a 62-slide deck). When analyzing PPTX
+files: do NOT trust partial context extraction alone. If slide bodies are
+empty or the slide count seems incomplete, fall back to python-pptx directly:
+`python3 -c "from pptx import Presentation; ..."` or use zipfile+XML to parse
+`ppt/slides/slideN.xml` for all `<a:t>` text tags. This guarantees 100% coverage.
+
+### Pitfall 6: Never cite academic papers without verifying existence first
+When referencing a paper by title, verify it exists before presenting it as
+fact. Preferred verification chain: OpenAlex API → Semantic Scholar API →
+DOI resolution. Browser search engines (Google Scholar, arXiv, IEEE Xplore)
+frequently CAPTCHA or rate-limit; APIs are more reliable. If a paper cannot
+be verified through any channel, state this honestly rather than implying
+certainty.
+
+## Project Research References
+
+- `references/ut285e-deep-research.md` — Full competitive analysis, NPU deployment
+  roadmap, AI paper landscape, certification strategy, and Fluke 1777 comparison
+  for the UT285E power quality analyzer project.

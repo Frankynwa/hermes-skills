@@ -16,6 +16,7 @@ Three reusable autonomous execution protocols, plus a task routing decision tree
 
 **Background:** See `references/ecosystem-survey.md` for the full survey of existing autonomous task patterns across Claude Code, Hermes, and skills.sh — and why this skill fills a genuine gap.
 **Overnight implementation reference:** `references/odyssey-implementation.md` — full overnight dialogue + planning system with cron orchestration, Feishu integration, and psych-nlp data injection.
+**Parallel document writing:** `references/parallel-document-writing.md` — proven pattern for writing long documents (thesis, reports) in parallel using delegate_task (3-agent thesis: 15k words in 5min).
 
 ---
 
@@ -208,6 +209,9 @@ After creating the cronjob, tell the user:
 - Do NOT create the cronjob until ALL 5 questions are answered
 - If the user provides partial answers in the trigger message (e.g. "过夜模式，跑 AlphaSeeker 回测，可以写文件"), pre-fill those answers and skip those questions
 - The cronjob session has NO conversation context — the prompt must be fully self-contained
+- **Interactive message reply IS the answer** — When user replies to a Feishu interactive card (e.g. clicks "要" on a "要我现在开始写吗？" button, or sends "要" as a text reply to a card question), that reply IS the complete answer. Do NOT ask for confirmation, do NOT ask what they mean, do NOT ask "are you sure?" — just execute. The user already made their decision by replying to the card. Treating a button-click as ambiguity is a first-class failure.
+- **Session reset ≠ user's goals are lost** — When a new session starts and the user references "今晚目标" or "已经对齐过的", search session_history FIRST to recover the aligned goals. Only ask the user if the search returns nothing. Never make the user re-explain something they already aligned on.
+- **Report completion time + token consumption** — Every autonomous task delivery (overnight or 20min) MUST include: (1) wall-clock start→end time, (2) total token consumption from delegate_task results (input + output per subagent, summed). Record start time with `date` before dispatch, calculate end time after all subagents return. Token data is available in delegate_task results under `tokens.input` and `tokens.output`. If the user asks "你没告诉我时间和token", that's a skill failure — it should have been in the report automatically.
 - Timezone: cron uses system time (macOS local time), not UTC
 - NEVER set schedule more than 1 hour in the future — the user should be about to sleep
 - Quality gates are mandatory — the cron agent MUST run the self-audit before delivering
@@ -353,7 +357,8 @@ After self-audit passes, deliver a structured report:
 ## ⚡ 20min 任务完成
 
 **任务：** [original goal]
-**耗时：** [actual time]
+**耗时：** [wall-clock: start_time → end_time, total seconds]
+**Token：** input [total_input] + output [total_output] = [grand_total]
 **权限：** [tier used]
 
 ### 做了什么
@@ -367,6 +372,8 @@ After self-audit passes, deliver a structured report:
 ### ⚠️ 注意事项（如有）
 - [any issues found during self-audit]
 ```
+
+**Token tracking**: Record start time with `terminal("date '+%Y-%m-%d %H:%M:%S'")` BEFORE dispatching delegate_task. After all subagents return, sum `tokens.input` and `tokens.output` from each subagent's result. Present as a table if 2+ subagents.
 ### Complete Example
 
 **Trigger:**

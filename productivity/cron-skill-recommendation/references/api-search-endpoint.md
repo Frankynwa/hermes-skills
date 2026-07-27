@@ -1,4 +1,4 @@
-# skills.sh API Search Endpoint (confirmed working 2026-07-02)
+# skills.sh API Search Endpoint (confirmed working 2026-07-25)
 
 ## Endpoint
 
@@ -7,8 +7,12 @@ GET https://skills.sh/api/search?q=<search_term>&limit=<N>
 ```
 
 **⚠️ Correct path is `/api/search`** — NOT `/api/skills/search`, `/api/v1/search`, or `/api/skills`. Those all return 404.
+**⚠️ NO `www.` prefix** — `www.skills.sh/api/search` returns 404. Use `skills.sh/api/search` only.
+**⚠️ Individual skill detail endpoints (`/api/skills/{id}`) return 404** — search is the ONLY available API.
 
-## Response Format
+## Response Format (updated 2026-07-26)
+
+The response is a **JSON object** with a `skills` array:
 
 ```json
 {
@@ -19,7 +23,7 @@ GET https://skills.sh/api/search?q=<search_term>&limit=<N>
       "id": "nousresearch/hermes-agent/dogfood",
       "skillId": "dogfood",
       "name": "dogfood",
-      "installs": 4069,
+      "installs": 4835,
       "source": "nousresearch/hermes-agent"
     },
     {
@@ -32,6 +36,14 @@ GET https://skills.sh/api/search?q=<search_term>&limit=<N>
   ]
 }
 ```
+
+**Parse accordingly:**
+```python
+data = json.loads(resp.read().decode())
+items = data.get("skills", []) if isinstance(data, dict) else (data if isinstance(data, list) else [])
+```
+
+**Note (2026-07-26):** Previous entry (2026-07-25) claimed the format changed to a "flat JSON array." This was incorrect — the wrapped format `{"skills":[...]}` is the actual response. Always use `data.get("skills", [])` with a fallback for robustness.
 
 ## Fields
 
@@ -52,11 +64,11 @@ GET https://skills.sh/api/search?q=<search_term>&limit=<N>
 - No authentication required
 - Be polite: add `time.sleep(0.3)` between queries
 - 15 search terms × 20 results (with limit=20) ≈ 250-300 unique skills after dedup by `id`
-- **API is unstable**: was down 2026-06-29, back up 2026-07-02. Always test one query first
+- **API stability history**: down 2026-06-29, back up 2026-07-02, down again 2026-07-23, back up 2026-07-25. Always test one query first. Sitemap XML (`sitemap-skills-{1,2}.xml`) is the reliable fallback.
 
 ## Getting Descriptions
 
-The API does NOT return descriptions. To get them, fetch individual skill pages:
+The API does NOT return descriptions. Individual skill detail endpoints (`/api/skills/{id}`) return 404. To get descriptions, fetch individual skill pages via HTTP and parse meta tags:
 
 ```python
 import urllib.request, re

@@ -85,6 +85,14 @@ Categorize into tiers:
 
 ## Country-by-Country Quick Reference (from grad-school-research)
 
+### Triple-Filter Methodology
+When evaluating a country for this user, apply three filters sequentially:
+1. **GPA filter:** Does the country/school accept ~2.5/4.0? (If no → skip, don't waste time)
+2. **Budget filter:** Total annual cost ≤ 20万 RMB? (If no → note the gap size, flag if gap is small enough to bridge)
+3. **Language filter:** English-taught programs available? (If no → only mention if user asks specifically)
+4. **After filtering:** Only deep-dive countries that pass 2/3 filters. For each, provide specific schools + costs + GPA feasibility + recognition assessment.
+- See `references/country-budget-analysis.md` for the full cross-country matrix with detailed comparisons.
+
 ### 🇭🇰 Hong Kong (including GBA campuses)
 - **Key schools:** CityU-DG (QS 52), HKUST-GZ (QS 60), CUHK-SZ (QS 47)
 - **CityU-DG specifics:** 10 MSc programs including AI, CS, Data Science. Accepts CET-6 425+. No explicit GPA minimum on website. Degree = CityU Hong Kong certificate. 2-year IANG work visa after graduation. **Best option for mainland Chinese students with low GPA.**
@@ -92,11 +100,15 @@ Categorize into tiers:
 - **Professor discretion:** HIGH for research programs at all HK schools. CUHK has the most explicit policy language allowing exceptions.
 
 ### 🇦🇺 Australia
-- **Key schools:** Monash (QS 37), Adelaide (QS 82), UNSW (QS 19), Melbourne (QS 13)
+- **Key schools by tier:**
+  - **Go8 (competitive):** Monash (QS 37), Adelaide (QS 82), UNSW (QS 19), Melbourne (QS 13)
+  - **Tier 3 (realistic for GPA 2.5):** RMIT (QS #123), UTS (QS #88), QUT (QS #213) — more flexible on GPA, "wide entry strict exit" culture
+- **Budget reality (tier 3):** RMIT 22-28万/yr, UTS 24-30万/yr, QUT 20-26万/yr — ALL exceed 20万 budget. Gap is 2-8万 RMB.
 - **GPA conversion:** 2.5/4.0 ≈ 62.5% Australian WAM
 - **Monash:** WAM 60% minimum for many programs. Master of AI available. ~AUD $46-49k/year tuition.
 - **Adelaide:** Regional area benefits — extra 1yr on 485 visa (3yr total), +5 immigration points, state nomination.
 - **Work visa:** 2yr 485 for coursework, 3yr for research. 485 fee increased to AUD $4,600 (2026). Age limit reduced to 35.
+- **Strategy for budget gap:** Part-time work (20h/week, ~AUD$20-25/h on student visa) can cover part of living costs; scholarships competitive but possible
 
 ### 🇬🇧 United Kingdom
 - **Key concept:** GPA 2.5/4.0 ≈ UK 2:2 (Lower Second Class)
@@ -125,12 +137,54 @@ Categorize into tiers:
 - **Tuition:** €14,000-22,000/year for non-EU
 
 ### 🇳🇿 New Zealand
-- **Key schools:** Canterbury (QS ~256), Otago (QS ~214), Auckland (QS ~68)
-- **Work visa:** 3-year post-study work visa
+- **Key schools (with budget):**
+  - **Auckland (UoA)**: QS #68, NZ$45-52k/yr tuition, total **24-30万 RMB/yr** — over budget
+  - **Otago**: QS #214, total **19-25万/yr** — budget edge
+  - **Waikato**: QS ~250, total **19-23万/yr** — budget edge
+  - **AUT**: Total **20-24万/yr** — budget edge
+  - **Canterbury**: QS #256, total **17-22万/yr** — closest to budget
+- **GPA:** Official minimum B (3.0) but work experience gives flexibility — user's Unilab internship helps
+- **Immigration:** 3-year post-study work visa (generous, no age limit reduction unlike Australia 2026)
+- **Budget gap is small** — only 2-5万 RMB over per year. If user can stretch to 20-22万/yr, NZ is viable
+- **Downside:** Small country = limited tech job market vs Australia/Canada
+
+### 🇲🇾 Malaysia
+- **Budget fits perfectly:** Public universities total 5-15万 RMB/yr
+- **Schools:**
+  - **UM (Malaya)**: QS #60, top in Malaysia, but CS master typically requires CGPA 3.0+ — 2.5 is edge
+  - **USM (Science)**: QS #146, more flexible admission, total 5-8万/yr
+  - **UKM (National)**: QS #138, total 6-9万/yr
+  - **UTM (Technology)**: QS #181, engineering/CS focus, total 6-9万/yr
+  - **Monash Malaysia**: QS #37 (Australian degree), total 13-19万/yr
+- **Fatal flaw: Recognition in China.** "Southeast Asia diploma mill" stigma in HR circles. Even UM (QS #60) struggles against this perception.
+- **When it makes sense:** As a PhD stepping stone — cheap research year → publish → apply for PhD in SG/HK/Europe. For direct employment, HK/Australia options are stronger.
+- **Local job market:** IT starting 3-5k MYR ≈ 5-8k RMB/month — not competitive
+
+### 🇸🇬 Singapore
+- **Skip.** GPA 2.5 has no realistic path into any public university (NUS/NTU/SMU/SUTD/SIT). Tiny pool of 6 schools, intense Chinese applicant competition, actual admission GPA 3.5+ for CS/AI.
+- Private colleges (PSB, Kaplan) issue UK/Australia degrees but recognition is worse than going to the source country.
+- Budget: 25-35万/yr even if admitted — exceeds limit.
+
+### 🇹🇼 Taiwan
+- **Skip.** Mainland Chinese students have been barred from degree programs since 2020. MUST students with mainland passports are affected. Only short-term exchange allowed — no degree.
+- Even if policy changes: few English-taught MS programs, local tech salary 9-11k RMB/month, recognition limited to NTU only in mainland China.
+
+**See `references/country-budget-analysis.md` for full cross-country budget/GPA/feasibility matrix with detailed multi-dimensional comparisons.**
 
 ### 🇨🇦 Canada
-- **Key insight:** University-level minimum is typically B (3.0) — hard floor at most schools
-- **Professor discretion:** Exists for MSc/PhD, especially at UdeM, McMaster, UAlberta
+- **Critical distinction:** Research MSc (thesis-based, supervisor picks, GPA 3.3-3.7) vs **Course-based MCS** (committee reviews holistically, GPA 2.7+ with flexibility). For GPA 2.5 students, ONLY course-based MCS is viable.
+- **Viable course-based schools for GPA 2.5:**
+  - **Memorial (MUN)**: C$5-8k/yr tuition, total 8-13万 RMB/yr — cheapest in Canada, known for GPA flexibility, Newfoundland PNP immigration friendly
+  - **U of Regina**: C$10-15k/yr, total 12-19万 RMB/yr — Saskatchewan, flexible admission
+  - **UNB**: MCS program, C$14-18k/yr, total 15-20万 RMB/yr
+  - **U of Manitoba**: Pre-Master's pathway → MSc (prove yourself first, then auto-advance), ~15-20万/yr
+  - **Lakehead**: Course option, C$15-20k/yr, total 17-23万/yr
+  - **Ontario Tech**: Professional MASc, C$18-22k/yr, total 20-25万/yr (over budget)
+- **Impossible (GPA 3.3+):** UofT, UBC, McGill, Waterloo, McMaster, Queen's, SFU
+- **Hard in practice (official 3.0, actual higher):** Alberta, Calgary, Western, uOttawa, Carleton, UVic
+- **Immigration advantage (unique):** PGWP → job → PNP → PR. Newfoundland/Saskatchewan/Manitoba have very low provincial nominee thresholds. This is the only path that solves both "degree + identity" simultaneously.
+- **Trade-off:** School recognition in China is weaker than RMIT/UTS (Australia) or CityU-DG (HK). Worth it only if immigration is a goal.
+- See `references/country-budget-analysis.md` for detailed Canada analysis with comparison to Australia/HK.
 
 ### 🇨🇳 中外合办 (Chinese-Foreign Cooperative)
 - **UIC (北师港浸大):** QS ~252, accepts CET-6 430+, tuition ¥8-10万/yr
@@ -227,6 +281,9 @@ Many Chinese university sites are heavily JS-rendered and curl cannot extract co
 
 ### Global School Options (GPA ~2.5)
 See `references/global-school-options-gpa25.md` — comprehensive list of 30+ schools across UK, Italy, Norway, Belgium, Netherlands, Germany, New Zealand, Australia, Canada, Switzerland, Hong Kong, and mainland China joint-venture campuses. Includes tuition, GPA requirements, IELTS scores, and feasibility assessment.
+
+### Country Budget Analysis (GPA 2.5 × Budget ≤20万)
+See `references/country-budget-analysis.md` — detailed cross-country analysis: Canada (course-based MCS tiered list), Malaysia (UM/USM/UTM/Monash), New Zealand (all 8 universities with budget), Singapore/Taiwan (why excluded), Australia tier 3 (RMIT/UTS/QUT). Includes triple-filter methodology and multi-dimensional comparison tables.
 
 ### School-by-School Quick Reference
 See `references/school-gpa-policies.md` for detailed per-school analysis.

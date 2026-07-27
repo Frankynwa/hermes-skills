@@ -1,0 +1,38 @@
+# Model Configuration Template
+# Fill in your provider, api_base, model_id for each model.
+# All fields required unless marked optional.
+
+models:
+  model-key:
+    label: "Human-Readable Name"
+    provider: provider_name          # deepseek | dashscope | minimax | moonshot | openai | anthropic
+    api_base: https://api.example.com
+    model_id: exact-model-id-string
+    context_window: 1000000
+    max_output_tokens: 131072
+    capabilities:
+      vision: false
+      thinking: false
+      tool_calling: true
+      structured_output: false
+      streaming: true
+      system_prompt: true
+    # Only if thinking is true:
+    thinking:
+      param: reasoning_effort        # extra_body or top-level field name
+      # budget_param: thinking_budget   # optional token budget param
+      # budget_default: 4096            # optional default budget
+      # type: adaptive                  # optional: for MiniMax
+    recommended_params:
+      coding:    { temperature: 0.0, top_p: 1.0 }
+      reasoning: { temperature: 0.3, top_p: 0.95 }
+      creative:  { temperature: 0.8, top_p: 0.9 }
+    notes: ""
+
+# Hermes profile mapping (must exist before running)
+profiles:
+  model-key: bench-modelname
+
+# API key env vars (shared via ~/.hermes/.env)
+api_keys:
+  provider_name: PROVIDER_API_KEY_ENV_VAR

@@ -146,6 +146,25 @@ lark-cli base +field-list --base-token X --table-id Y --as bot --json
 
 其他 `+field-*` 系列命令同理（`+field-get`、`+field-create` 等不需要 `--json`）。
 
+## lark-cli 发送消息用户看不到（关键坑）
+
+**lark-cli 的 bot 身份和 Hermes Feishu 集成可能使用不同的飞书应用。** `im +messages-send` 返回 `"ok": true` 且有 valid message_id，但用户在 Hermes Feishu 对话中完全看不到这些消息——因为它们被发送到了 lark-cli 绑定的另一个飞书 bot 应用中。
+
+**验证方法：** 发送测试消息后问用户"看到了吗？"——不要假设 `ok: true` 等于送达。
+
+**解决：用 cron job 的 `deliver: origin` 投递机制代替 lark-cli 发消息。** Cron agent 将消息作为 final response 输出，Hermes 的投递机制会将消息发送到用户正在看的 Feishu 对话通道。
+
+```python
+# ❌ 不可靠 —— lark-cli 返回 ok 但用户看不到
+send_message_via_lark_cli("消息内容")
+
+# ✅ 可靠 —— cron agent 的 final response 会被 Hermes 投递到当前对话
+# Cron job 中: agent 运行脚本，脚本输出消息到 stdout，agent 返回该输出
+# Hermes 自动投递到 origin 对话
+```
+
+**例外（只读安全）：** lark-cli 的**读取**命令（`+chat-messages-list` 等）已验证可用——psych-nlp 的 `analyze_daily_reflection.py` 一直正常运行。问题仅限**发送**方向。
+
 ## im +messages-send 不支持 --yes
 
 `--yes` 只存在于高风险写操作命令（如 `+record-delete`、`+field-delete`、`+table-delete` 等）。`+messages-send` 不是高风险写操作，传 `--yes` 会报 `unknown flag: --yes`：
@@ -171,7 +190,53 @@ lark-cli im +messages-send --user-id ou_xxx --as bot --yes --markdown '...'
 
 **当前最安全策略（2026-06-22）：** 避免 `--markdown` 传中文；使用 `--text` 并通过 `cat file | lark-cli ... --text -` 管道输入。
 
-## 技巧：飞书开放平台文档的 .md 访问
+## 飞书卡片组件完整限制 & 交互卡片发送
+
+### 核心教训：不要凭空画 mockup——先查文档再写代码
+
+**踩坑（2026-07-24）**：为 Odyssey 晨间卡片画了带 `<input>` 输入框的交互卡片 mockup，直接写代码实现。发送时报错 `ErrCode 11310: div's extra must be one of the following elements: [img button select_static select_person overflow date_picker picker_date picker_time picker_datetime]`——输入框根本不在支持列表中。
+
+**教训**：像论文筛选一样——「看起来应该支持」≠「实际支持」。任何涉及第三方 API 的设计，必须先验证约束再画 mockup，不要先画图再查文档。
+
+### 飞书交互卡片支持清单
+
+| 组件 | 支持 | 用法 |
+|------|------|------|
+| `button` | ✅ | `action` 块内，带 `value` 回调 |
+| `select_static` | ✅ | 下拉选择，`options` 数组 |
+| `overflow` | ✅ | 溢出菜单 |
+| `date_picker` | ✅ | 日期选择 |
+| `select_person` | ✅ | 人员选择 |
+| `picker_date/time/datetime` | ✅ | 时间选择 |
+| `img` | ✅ | 图片 |
+| `markdown` | ✅ | 富文本展示 |
+| `div` | ✅ | 带 `extra` 的文本行（extra 只能用上面的交互组件） |
+| `input` | ❌ | **不支持**，这是错误 11310 的根源 |
+
+### 发送交互卡片
+
+```bash
+# 先生成卡片 JSON
+python3 /tmp/test_odyssey_card.py > /tmp/test_card.json
+
+# 发送（msg_type 必须是 interactive）
+lark-cli im +messages-send --chat-id oc_xxx --msg-type interactive \
+  --content "$(cat /tmp/test_card.json)" --as bot
+```
+
+**关键**：`--msg-type` 必须是 `interactive`，`--content` 是完整的卡片 JSON。
+
+### 卡片回调处理
+
+按钮和 select_static 的值通过 `value` 字段传入。Gateway 已在 `_on_card_action_trigger` 中处理回调：
+- Button value 中带 `hermes_action` → 审批流程
+- Button value 中带 `hermes_update_prompt_action` → 更新提示词
+- 其他 → `_handle_card_action_event` 路由为 synthetic COMMAND
+- 新增 `odyssey_action` 分支 → `_handle_odyssey_card_action`
+
+### 卡片替换
+
+状态按钮点后返回 `P2CardActionTriggerResponse()`（仅 ack，卡片不变）。提交按钮返回带 `CallBackCard` 的 response（原地替换为新卡片）。
 
 飞书开放平台文档页是 SPA（单页应用），`curl` 直接抓取只拿到空壳 HTML。但每个页面都有 markdown 备选版本：
 
@@ -440,6 +505,26 @@ cd /path/to/dir && lark-cli im +messages-send --file "filename.ext" --user-id ou
 # 图片
 cd /path/to/dir && lark-cli im +messages-send --image "image.png" --user-id ou_xxx --as bot
 ```
+
+### lark-cli Bot 消息 vs Hermes 对话通道不互通（2026-07-23 验证）
+
+**lark-cli 的 bot 身份 (`cli_aa8eecb89dfbdcdd`) 和 Hermes Feishu 集成使用不同的应用通道。** 即使 lark-cli API 返回 `"ok": true` 且有有效 message_id，用户在当前 Hermes 对话中**可能完全看不到这些消息**。
+
+**验证现象**：
+```bash
+echo "测试消息" | lark-cli im +messages-send --user-id ou_xxx --as bot --text -
+# → {"ok": true, "message_id": "om_xxx"}  ← API 成功
+# 用户在飞书中 → 看不到任何消息
+```
+
+**原因**：Hermes 的飞书对话通过 Hermes Gateway（使用独立的飞书应用）投递，而 `lark-cli` 使用的是另一个飞书应用（`appId: cli_aa8eecb89dfbdcdd`）。两个应用的消息在不同通道中，用户在一个对话里看不到另一个 bot 发来的消息。
+
+**正确做法**：
+1. **在 Hermes 对话中发消息**：用 cron job 的 `deliver: origin` 机制，让 agent 最终回复自动投递到当前对话，而不是通过 lark-cli 发送
+2. **lark-cli 只用于读操作**：拉取消息历史（`+chat-messages-list`）已验证可用，因为读操作不涉及消息通道归属
+3. **必须用 lark-cli 发送时**：先发一条测试消息并让用户在飞书中确认收到，再批量发送。不要假设 API 返回 ok = 用户看到了
+
+**受影响场景**：任何想通过 cron job + lark-cli 自动推送消息到用户飞书的方案都需要重新考虑投递通道。
 
 ### HTML 可视化 → 截图 → 飞书投递模式
 

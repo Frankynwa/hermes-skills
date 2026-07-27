@@ -286,6 +286,12 @@ modetest -M rockchip -c    # DRM connector info
 | `sdl2_display_init` undefined | Wrong function name for LVGL v9 | Correct API: `sdl2_init()`, `sdl2_loop()`, `sdl2_deinit()` |
 | **RK3568 GPU driver missing** | Mali-G52 driver not loaded | `ls /dev/dri/card0` must exist; if not, install `mali-g610-firmware` or use fbdev fallback |
 
+## Domain References
+
+When working on UT285E, consult these references for product architecture context:
+- `references/ut285e-product-overview.md` — System architecture, team division, hardware specs, competitive analysis
+- `references/pptx-reliable-extraction.md` — Technique for reliably extracting all slides from PPTX product definition files
+
 ## Templates
 
 - `templates/toolchain-rk3568.cmake` — Cross-compilation toolchain for RK3568 (Cortex-A55). Edit `TOOLCHAIN_PREFIX` before use.

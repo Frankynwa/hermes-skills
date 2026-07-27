@@ -1,6 +1,6 @@
 ---
 name: signal-processing
-description: "ADC/DSP signal processing — FFT analysis, filter design (EWMA/IIR/FIR), window function selection, spectrum leakage diagnosis, embedded MCU implementation. Triggers on: FFT, spectrum, ADC, filter design, EWMA, frequency analysis, signal noise, DSP."
+description: "ADC/DSP signal processing — FFT analysis, filter design (EWMA/IIR/FIR), window function selection, spectrum leakage diagnosis, embedded MCU implementation. Also covers AI/ML for signal classification (power quality disturbance detection, harmonic source identification, edge NPU deployment). Triggers on: FFT, spectrum, ADC, filter design, EWMA, frequency analysis, signal noise, DSP, power quality, PQD, disturbance classification, NPU inference, edge AI."
 ---
 
 # Signal Processing — ADC/DSP Analysis & Filter Design
@@ -136,6 +136,10 @@ Actual resolution is always limited by observation window T = N/fs = 5s → df =
 
 6. **Window function for multi-frequency signals**: Adding Hanning/Blackman broadens main lobes of each frequency component, causing adjacent frequencies to interfere. Verify by comparing sidelobe energy with and without window.
 
+7. **PPT/Office document extraction**: NEVER rely on the built-in text extraction pipeline for uploaded pptx/xlsx files — it can silently drop slides (observed: slides 57-62 of a 62-slide PPT missing). Always use python-pptx in terminal for 100% extraction. See `references/academic-search-methodology.md` for the exact command.
+
+8. **Paper quality before citing**: Before presenting any academic paper as evidence, run the quality screening protocol in `ai-technique-evaluation/references/paper-quality-screening.md`. 0 references = automatic rejection no matter how well the title matches the domain. A predatory-journal paper was initially recommended for UT285E based on title match; user corrected this harshly.
+
 ## Verification Checklist
 
 Before reporting FFT analysis results:
@@ -152,3 +156,5 @@ Before reporting FFT analysis results:
 - `references/fft-analysis-methodology.md` — Detailed FFT verification methodology with Python code templates
 - `references/mcu-filter-selection.md` — Q16 vs float32 decision matrix for ARM Cortex-M platforms
 - `references/ewma-design-notes.md` — EWMA parameter selection, deviation domain math, adaptive alpha design
+- `references/power-quality-ai-algorithms.md` — AI/ML for power quality disturbance classification: 9 vetted papers with quality scores, GitHub repos, edge deployment strategy, industry adoption status, JAIGS predatory-paper lesson (July 2026)
+- `references/academic-search-methodology.md` — Multi-platform academic search strategy, anti-bot workarounds, python-pptx extraction override for PPT reliability, quality screening reminders (July 2026)

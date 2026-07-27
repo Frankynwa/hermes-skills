@@ -14,6 +14,20 @@ When the user questions whether an AI technique, product, or claim is genuinely 
 - "does X actually work?"
 - Any skepticism about a tech claim
 
+## Prerequisite: Paper Quality Screening (ALWAYS run first)
+
+Before citing ANY academic paper as evidence, verify its credibility. Domain/title match alone is NOT enough — predatory journals publish keyword-matched junk with 0 references and 0 peer review.
+
+Hard reject criteria:
+- References < 20 (0 references = automatic rejection regardless of topic match)
+- Venue not indexed in Scopus/WoS/IEEE Xplore
+- Journal created < 2 years ago with no established track record
+- Non-specialist author institutions with no prior publications in the domain
+
+See `references/paper-quality-screening.md` for full protocol, OpenAlex verification script, and pre-vetted venue lists.
+
+When a paper fails screening, tell the user explicitly WHY and offer to find legitimate alternatives. Never present a flagged paper as credible evidence.
+
 ## 4-Layer Investigation Protocol
 
 ### Layer 1: Academic Papers
@@ -48,6 +62,7 @@ Structure findings as:
 5. Practical next step (if applicable)
 
 ## Pitfalls
+- **Keyword-matched predatory papers:** A paper whose title perfectly matches the user's domain can still be junk. Always screen venue, citations, and references BEFORE presenting the paper as evidence. The user explicitly corrected this: "不是看到领域符合就行，随便搜一个野鸡注水造价论文". See `references/paper-quality-screening.md`.
 - AlpacaEval / MT-Bench wins may reflect judge model bias, not genuine quality improvement
 - Academic benchmarks do not equal user's actual task domain. Always flag this gap explicitly.
 - GitHub star count can be inflated by HN launches; weight maintenance activity and issues more.
@@ -55,8 +70,10 @@ Structure findings as:
 
 ## Reference Files
 - `references/moa-research.md` — Condensed MoA paper findings and practical conclusions (July 2026)
+- `references/paper-quality-screening.md` — Academic paper credibility verification protocol: venue checks, citation/reference thresholds, OpenAlex screening script, pre-vetted journal lists (July 2026)
 
 ## Anti-Patterns
+- Do NOT recommend a paper based on title/domain keyword match without running the full quality screening protocol. A perfect title match on a predatory-journal paper (0 references, 0 peer review) is worse than silence.
 - Do not stop at the seminal paper's abstract. Read at least 3 papers (original + critique + improvement).
 - Do not claim "it works" without noting the domain gap between benchmarks and user's tasks.
 - Do not ignore cost. If the paper does not discuss it, flag it as a gap.
