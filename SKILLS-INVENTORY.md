@@ -1,7 +1,7 @@
 # Hermes Skills Inventory
 
 > Last updated: 2026-07-29
-> Total: 136 skills across 12 categories
+> Total: 107 unique skills (main directory) + 267 copies in bench profiles (89×3 for model benchmarking)
 > Source: `~/.hermes/skills/` on macOS (wangruifan)
 
 ---
